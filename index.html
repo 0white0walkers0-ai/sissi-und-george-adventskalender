@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sissi & George – Unser Adventskalender</title>
+<style>
+:root {
+  --red:#a51f39;
+  --gold:#f4d18a;
+  --cream:#fff7e9;
+}
+* { box-sizing:border-box; }
+body {
+  margin:0;
+  font-family:system-ui,Arial,sans-serif;
+  color:var(--cream);
+  background:
+    radial-gradient(ellipse at top,#345f5a,#112c35 60%,#081b25);
+  min-height:100vh;
+}
+header {
+  text-align:center;
+  padding:36px 15px 15px;
+}
+h1 {
+  font-family:Georgia,serif;
+  font-size:clamp(29px,6vw,52px);
+  color:var(--gold);
+  margin:0;
+}
+header p { line-height:1.6; }
+.controls {
+  text-align:center;
+  margin:16px auto 24px;
+}
+button, a.music {
+  cursor:pointer;
+  font:inherit;
+  border:0;
+  border-radius:12px;
+  padding:12px 16px;
+}
+button:focus-visible, a:focus-visible {
+  outline:3px solid var(--gold);
+  outline-offset:3px;
+}
+.controls button {
+  background:#fff2d5;
+  color:#25373a;
+}
+.calendar {
+  max-width:1050px;
+  margin:0 auto 50px;
+  padding:12px;
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:12px;
+}
+.door {
+  min-height:130px;
+  color:var(--gold);
+  background:linear-gradient(145deg,#ad3046,#65182c);
+  border:2px solid #dfb979;
+  box-shadow:0 5px 14px #0005;
+  position:relative;
+  transition:transform .2s;
+}
+.door:hover { transform:translateY(-3px); }
+.door .number {
+  font: bold clamp(27px,5vw,45px) Georgia,serif;
+}
+.door .symbol {
+  display:block;
+  font-size:26px;
+  margin-top:8px;
+}
+.door.opened {
+  background:linear-gradient(145deg,#426d63,#21453f);
+}
+.door.locked {
+  opacity:.55;
+}
+.overlay {
+  position:fixed;
+  inset:0;
+  z-index:10;
+  background:#06151eea;
+  display:none;
+  overflow:auto;
+  padding:20px 12px;
+}
+.overlay.visible { display:block; }
+.panel {
+  position:relative;
+  max-width:650px;
+  margin:20px auto;
+  padding:24px;
+  text-align:center;
+  background:#173b40;
+  border:2px solid var(--gold);
+  border-radius:22px;
+}
+.close {
+  position:absolute;
+  top:10px;
+  right:10px;
+  background:#fff2d5;
+  color:#203b3a;
+}
+.panel h2 { color:var(--gold); }
+.scene {
+  min-height:220px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-direction:column;
+  background:linear-gradient(145deg,#54766d,#253d55);
+  border-radius:15px;
+  margin:20px 0;
+  padding:15px;
+  overflow:hidden;
+}
+.scene img {
+  max-width:100%;
+  max-height:440px;
+  object-fit:contain;
+  border-radius:10px;
+}
+.placeholder { font-size:65px; }
+.message {
+  font-family:Georgia,serif;
+  font-size:21px;
+  line-height:1.5;
+}
+.music-links {
+  display:flex;
+  justify-content:center;
+  flex-wrap:wrap;
+  gap:12px;
+  margin:20px 0;
+}
+a.music {
+  display:inline-block;
+  color:white;
+  text-decoration:none;
+  font-weight:bold;
+}
+.spotify { background:#167c42; }
+.youtube { background:#c7252e; }
+.reveal {
+  display:none;
+  padding:15px;
+  background:#fff1d9;
+  color:#25383a;
+  border-radius:12px;
+  line-height:1.6;
+}
+.reveal.visible { display:block; }
+.navigation {
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  margin-top:20px;
+}
+.navigation button {
+  background:#f1d39a;
+  color:#263b3a;
+}
+footer {
+  text-align:center;
+  padding:20px;
+  color:#e6d7b9;
+}
+@media(max-width:600px) {
+  .calendar { grid-template-columns:repeat(3,minmax(0,1fr)); }
+  .door { min-height:105px; }
+  .panel { padding:17px; }
+}
+@media(prefers-reduced-motion:reduce) {
+  * { transition:none !important; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🎄 Sissi & George 🦄</h1>
+  <p>Unser Adventskalender ❤️<br>
+  24 Türchen · 24 Lieder · ganz viel Liebe</p>
+</header>
+
+<div class="controls">
+  <button id="modeButton" onclick="toggleMode()">
+    🎁 Vorschau: Alle Türchen öffnen
+  </button>
+</div>
+
+<main id="calendar" class="calendar"></main>
+
+<div id="overlay" class="overlay"
+     onclick="if(event.target===this)closeDoor()">
+  <section class="panel" role="dialog"
+           aria-modal="true" aria-labelledby="doorTitle">
+    <button class="close" onclick="closeDoor()"
+            aria-label="Schließen">✕</button>
+
+    <h2 id="doorTitle"></h2>
+
+    <div id="scene" class="scene"></div>
+
+    <p id="message" class="message"></p>
+
+    <p>🎶 Ein Lied wartet auf dich …</p>
+    <p>Wähle deinen Musikdienst und
+       entdecke die Überraschung!</p>
+
+    <div class="music-links">
+      <a id="spotify" class="music spotify"
+         target="_blank" rel="noopener noreferrer">
+        🎵 Spotify
+      </a>
+      <a id="youtube" class="music youtube"
+         target="_blank" rel="noopener noreferrer">
+        ▶ YouTube
+      </a>
+    </div>
+
+    <div id="reveal" class="reveal" aria-live="polite"></div>
+
+    <div class="navigation">
+      <button onclick="navigate(-1)">← Zurück</button>
+      <button onclick="navigate(1)">Weiter →</button>
+    </div>
+  </section>
+</div>
+
+<footer>
+  Mit Liebe gemacht ❤️<br>
+  Für all die kleinen und großen Glücksmomente.
+</footer>
+
+<script>
+const playlist = [
+  ["ABBA","I Do, I Do, I Do, I Do, I Do"],
+  ["John Legend","All of Me"],
+  ["Ed Sheeran","Perfect"],
+  ["Bruno Mars","Just the Way You Are"],
+  ["Elvis Presley","Can't Help Falling in Love"],
+  ["Ben E. King","Stand By Me"],
+  ["Blümchen","Herz an Herz"],
+  ["Bryan Adams","(Everything I Do) I Do It for You"],
+  ["The Temptations","My Girl"],
+  ["Whitney Houston","I Will Always Love You"],
+  ["ABBA","Dancing Queen"],
+  ["Phil Collins","You'll Be in My Heart"],
+  ["GroßstadtEngel","Gute Laune"],
+  ["Berlin","Take My Breath Away"],
+  ["Queen","Don't Stop Me Now"],
+  ["Helene Fischer & Florian Silbereisen","Schau mal herein"],
+  ["Silbermond","Das Beste"],
+  ["Adel Tawil","Lieder"],
+  ["Elton John","Can You Feel the Love Tonight"],
+  ["Bill Medley & Jennifer Warnes","(I've Had) The Time of My Life"],
+  ["The Beatles","All You Need Is Love"],
+  ["Mark Forster","194 Länder"],
+  ["Céline Dion","My Heart Will Go On"],
+  ["ENKAY","Du bist toll"]
+];
+
+const scenes = [
+  ["💍","Ein kleines Ja kann ganz großes Glück bedeuten."],
+  ["💚","Du bist wunderbar, mit allem, was dich ausmacht."],
+  ["🛷","Manche Augenblicke fühlen sich einfach perfekt an."],
+  ["🎄","Du musst nichts verändern, um besonders zu sein."],
+  ["🏙️","Manchmal findet das Herz seinen eigenen Weg."],
+  ["🦢","Zusammen ist selbst ein kalter Tag voller Wärme."],
+  ["🍪","Ein bisschen Chaos und ganz viel Herz."],
+  ["🌊","Für dich würde ich sogar dem Winterwind trotzen."],
+  ["☃️","Mit dir wird jeder Wintertag ein Sonnentag."],
+  ["🎬","Ich bin da, wenn du mich brauchst."],
+  ["🎤","Heute gehört die Bühne uns!"],
+  ["🌿","Ein Platz in meinem Herzen ist immer für dich frei."],
+  ["🎢","Mit dir macht sogar das größte Durcheinander Spaß."],
+  ["✈️","Manche Begegnungen rauben einem den Atem."],
+  ["🚆","Auf zu neuen Abenteuern – bloß nicht den Zug verpassen!"],
+  ["🎭","Ein Blick sagt manchmal mehr als tausend Worte."],
+  ["🕯️","Das Schönste an diesem Moment bist du."],
+  ["🌍","Jedes Lied erzählt ein kleines Stück unserer Geschichte."],
+  ["🦁","Unter dem Sternenhimmel zählt nur dieser Augenblick."],
+  ["💃","Ein Moment, den wir niemals vergessen."],
+  ["🚌","Manchmal braucht es nur ein bisschen Liebe."],
+  ["🎡","194 Länder – aber mein Lieblingsplatz ist bei dir."],
+  ["🚢","Manche Gefühle bleiben für immer."],
+  ["🎁","Du bist toll. Genau so, wie du bist. ❤️"]
+];
+
+let current = 0;
+let preview = true;
+let opened = new Set();
+let revealed = new Set();
+
+const $ = id => document.getElementById(id);
+
+function available(day) {
+  if (preview) return true;
+  const now = new Date();
+  return now.getMonth() === 11 &&
+         now.getDate() >= day;
+}
+
+function renderCalendar() {
+  $("calendar").innerHTML = "";
+  scenes.forEach((scene,i) => {
+    const day = i+1;
+    const btn = document.createElement("button");
+    btn.className = "door" +
+      (opened.has(i) ? " opened" : "") +
+      (!available(day) ? " locked" : "");
+    btn.disabled = !available(day);
+    btn.setAttribute("aria-label","Türchen "+day);
+    btn.innerHTML =
+      '<span class="number">'+day+'</span>' +
+      '<span class="symbol">'+
+      (opened.has(i) ? "❤️" : "✦")+
+      '</span>';
+    btn.onclick = () => openDoor(i);
+    $("calendar").appendChild(btn);
+  });
+}
+
+function openDoor(i) {
+  if (!available(i+1)) return;
+  current = i;
+  opened.add(i);
+  renderCalendar();
+
+  $("doorTitle").textContent = "🎁 Türchen "+(i+1);
+  $("message").textContent = scenes[i][1];
+
+  const scene = $("scene");
+  scene.innerHTML = "";
+
+  // Die endgültigen Bilder ergänzen wir später.
+  // Bildname: bilder/01.jpg bis bilder/24.jpg
+  const filename =
+    "bilder/"+String(i+1).padStart(2,"0")+".jpg";
+
+  const img = document.createElement("img");
+  img.alt = "Sissi und George – Türchen "+(i+1);
+  img.src = filename;
+
+  img.onerror = () => {
+    scene.innerHTML =
+      '<div class="placeholder">'+scenes[i][0]+'</div>'+
+      '<p>Unser Sissi-und-George-Bild folgt ❤️</p>';
+  };
+  scene.appendChild(img);
+
+  const query = encodeURIComponent(
+    playlist[i][0]+" "+playlist[i][1]
+  );
+
+  $("spotify").href =
+    "https://open.spotify.com/search/"+query;
+
+  $("youtube").href =
+    "https://www.youtube.com/results?search_query="+query;
+
+  $("reveal").classList.toggle(
+    "visible",revealed.has(i)
+  );
+
+  $("reveal").textContent =
+    "🎶 "+playlist[i][0]+" – "+playlist[i][1];
+
+  $("overlay").classList.add("visible");
+  document.body.style.overflow = "hidden";
+}
+
+function revealSong() {
+  revealed.add(current);
+  $("reveal").classList.add("visible");
+}
+
+$("spotify").addEventListener("click",revealSong);
+$("youtube").addEventListener("click",revealSong);
+
+function closeDoor() {
+  $("overlay").classList.remove("visible");
+  document.body.style.overflow = "";
+}
+
+function navigate(step) {
+  let next = current+step;
+  if (next<0 || next>=24) return;
+  if (available(next+1)) openDoor(next);
+}
+
+function toggleMode() {
+  preview = !preview;
+  $("modeButton").textContent = preview
+    ? "🎁 Vorschau: Alle Türchen öffnen"
+    : "🔒 Adventsmodus: täglich freischalten";
+  closeDoor();
+  renderCalendar();
+}
+
+document.addEventListener("keydown",e => {
+  if (!$("overlay").classList.contains("visible")) return;
+  if (e.key==="Escape") closeDoor();
+  if (e.key==="ArrowLeft") navigate(-1);
+  if (e.key==="ArrowRight") navigate(1);
+});
+
+renderCalendar();
+</script>
+</body>
+</html>
