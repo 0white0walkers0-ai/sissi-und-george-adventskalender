@@ -345,7 +345,7 @@ function openDoor(i) {
   // Bildname: bilder/01.jpg bis bilder/24.jpg
   const filename =
   "bilder/"+String(i+1).padStart(2,"0")+
-  (i === 0 || i === 1 || i === 2 || i === 3 || i === 4 || i === 5 || i === 6 || i === 7 || i === 8 || i === 9 || i === 10 || i === 23 ? ".png" : ".jpg");
+  (i === 0 || i === 1 || i === 2 || i === 23 ? ".png" : ".jpg");
 
   const img = document.createElement("img");
   img.alt = "Sissi und George – Türchen "+(i+1);
