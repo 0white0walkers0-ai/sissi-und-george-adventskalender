@@ -344,7 +344,8 @@ function openDoor(i) {
   // Die endgültigen Bilder ergänzen wir später.
   // Bildname: bilder/01.jpg bis bilder/24.jpg
   const filename =
-    "bilder/"+String(i+1).padStart(2,"0")+".jpg";
+  "bilder/"+String(i+1).padStart(2,"0")+
+  (i === 23 ? ".png" : ".jpg");
 
   const img = document.createElement("img");
   img.alt = "Sissi und George – Türchen "+(i+1);
