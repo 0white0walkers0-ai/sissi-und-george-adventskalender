@@ -255,8 +255,8 @@ const playlist = [
   ["ABBA","Dancing Queen"],
   ["Phil Collins","You'll Be in My Heart"],
   ["GroßstadtEngel","Gute Laune"],
-  ["Berlin","Take My Breath Away"],
   ["Queen","Don't Stop Me Now"],
+  ["Berlin","Take My Breath Away"],
   ["Helene Fischer & Florian Silbereisen","Schau mal herein"],
   ["Silbermond","Das Beste"],
   ["Adel Tawil","Lieder"],
@@ -282,8 +282,8 @@ const scenes = [
   ["🎤","Heute gehört die Bühne uns!"],
   ["🌿","Ein Platz in meinem Herzen ist immer für dich frei."],
   ["🎢","Mit dir macht sogar das größte Durcheinander Spaß."],
-  ["✈️","Manche Begegnungen rauben einem den Atem."],
   ["🚆","Auf zu neuen Abenteuern – bloß nicht den Zug verpassen!"],
+  ["✈️","Manche Begegnungen rauben einem den Atem."],
   ["🎭","Ein Blick sagt manchmal mehr als tausend Worte."],
   ["🕯️","Das Schönste an diesem Moment bist du."],
   ["🌍","Jedes Lied erzählt ein kleines Stück unserer Geschichte."],
@@ -344,8 +344,9 @@ function openDoor(i) {
   // Die endgültigen Bilder ergänzen wir später.
   // Bildname: bilder/01.jpg bis bilder/24.jpg
   
- const filename = "Bilder/" + String(i + 1).padStart(2, "0") + ".png";
- (i === 0 || i === 1 || i === 2 || i === 23 ? ".png" : ".jpg");
+ // Türchen 14 und 15 tauschen ihre bisherigen Bilddateien.
+ const imageDay = i === 13 ? 15 : i === 14 ? 14 : i + 1;
+ const filename = "Bilder/" + String(imageDay).padStart(2, "0") + ".png";
 
   const img = document.createElement("img");
   img.alt = "Sissi und George – Türchen "+(i+1);
