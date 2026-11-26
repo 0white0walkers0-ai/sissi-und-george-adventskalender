@@ -433,7 +433,7 @@ body.pilot-snow-paused .snowflake {animation-play-state:paused!important}
 @media(max-width:768px), (pointer:coarse) and (max-width:1024px){
   .overlay.pilot-mobile-stable {overflow-anchor:none;scroll-behavior:auto}
   .overlay.pilot-mobile-stable .panel {overflow-anchor:none}
-  #riddlePilot.mobile-celebrating {box-sizing:border-box;min-height:var(--mobile-riddle-height,0px);display:flex;flex-direction:column;justify-content:center;border:1px solid #dfb979;border-radius:12px;margin-bottom:16px}
+  #riddlePilot.mobile-celebrating {box-sizing:border-box;min-height:0;display:flex;flex-direction:column;justify-content:center;border:1px solid #dfb979;border-radius:12px;margin-bottom:16px}
   #riddlePilot.mobile-celebrating + #pilotMusic {border:1px solid #dfb979;border-radius:12px;padding:14px 18px 18px}
   #riddlePilot.mobile-celebrating #pilotAnswer {animation:pilot-mobile-fade .4s both;transform:none}
   .overlay.pilot-mobile-stable #pilotMusic.pilot-preparing {visibility:hidden;opacity:0}
@@ -676,7 +676,7 @@ const pilotMode=()=>preview?"preview":"christmas";
 const pilotLocked=()=>current===0&&(!pilotSolved[pilotMode()]||pilotAnimating);
 let pilotHintCount=0, pilotAnimating=false, pilotTimers=[], pilotChoosing=false;
 let pilotExpansion=null, pilotNavigationMotion=null;
-function cancelPilotAnimation(){pilotTimers.forEach(clearTimeout);pilotTimers=[];pilotAnimating=false;if(pilotExpansion){pilotExpansion.cancel();pilotExpansion=null;}if(pilotNavigationMotion){pilotNavigationMotion.cancel();pilotNavigationMotion=null;}document.body.classList.remove("pilot-snow-paused");$("overlay").classList.remove("pilot-mobile-stable");$("riddlePilot").classList.remove("mobile-celebrating");$("riddlePilot").style.removeProperty("--mobile-riddle-height");$("pilotMusic").classList.remove("mobile-arriving");$("pilotStage").classList.remove("pilot-expanding");$("riddlePilot").classList.remove("departing","celebrating");$("pilotMusic").classList.remove("pilot-arriving","pilot-preparing");}
+function cancelPilotAnimation(){pilotTimers.forEach(clearTimeout);pilotTimers=[];pilotAnimating=false;if(pilotExpansion){pilotExpansion.cancel();pilotExpansion=null;}if(pilotNavigationMotion){pilotNavigationMotion.cancel();pilotNavigationMotion=null;}document.body.classList.remove("pilot-snow-paused");$("overlay").classList.remove("pilot-mobile-stable");$("riddlePilot").classList.remove("mobile-celebrating");$("pilotMusic").classList.remove("mobile-arriving");$("pilotStage").classList.remove("pilot-expanding");$("riddlePilot").classList.remove("departing","celebrating");$("pilotMusic").classList.remove("pilot-arriving","pilot-preparing");}
 function pilotLater(fn,ms){pilotTimers.push(setTimeout(fn,ms));}
 function renderPilot(){
   const active=current===0, solved=active&&!pilotLocked();
@@ -717,7 +717,6 @@ $("pilotReveal").addEventListener("click",()=>{
     overlay.classList.add("pilot-mobile-stable");
     const riddle=$("riddlePilot");
     mobileAnchor=riddle.getBoundingClientRect().top;
-    riddle.style.setProperty("--mobile-riddle-height",Math.ceil(riddle.getBoundingClientRect().height)+"px");
     if(document.activeElement instanceof HTMLElement)document.activeElement.blur();
   }
   pilotAnimating=true;
@@ -730,7 +729,8 @@ $("pilotReveal").addEventListener("click",()=>{
       $("riddlePilot").classList.add("mobile-celebrating");
       pilotAnimating=false;renderPilot();pilotAnimating=true;
       $("pilotMusic").classList.add("pilot-preparing");
-      $("pilotMusic").hidden=true;
+      // Reserve the separate music section before restoring the scroll anchor.
+      $("pilotMusic").hidden=false;
       preserveMobileAnchor();
       return;
     }
