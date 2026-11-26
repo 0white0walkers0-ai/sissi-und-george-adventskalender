@@ -357,6 +357,8 @@ body.welcome .door { animation:welcome-in .85s ease both; animation-delay:calc(1
 #embeddedMusic iframe{display:block;width:100%;border:0;border-radius:12px}
 .spotify-frame{height:152px}
 .youtube-frame{aspect-ratio:16/9;min-height:200px}
+#embeddedMusic[hidden],#persistentYoutube[hidden]{display:none!important}
+#persistentYoutube iframe{width:100%;aspect-ratio:16/9;height:auto;min-height:200px}
 </style>
 </head>
 <body>
@@ -489,26 +491,33 @@ const musicTracks = {
   2:{spotify:"3U4isOIWM3VvDubwSI3y7a",youtube:"450p7goxZqg"},
   3:{spotify:"0tgVpDi06FyKpA1z0VMD4v",youtube:"2Vv-BfVoq4g"}
 };
-let musicTimer=null, imageReady=false;
+let musicTimer=null, imageReady=false, ytPlayer=null, ytReady=false, ytId=null;
 function stopEmbeddedMusic(){
   clearTimeout(musicTimer);musicTimer=null;
-  $("embeddedMusic").replaceChildren();
+  if(ytReady){try{ytPlayer.pauseVideo();}catch(e){}}
+  $("embeddedMusic").hidden=true;
+  $("embeddedMusic").querySelectorAll(":scope > :not(#persistentYoutube)").forEach(el=>el.remove());
 }
 function showEmbeddedMusic(){
   stopEmbeddedMusic();
-  if(!imageReady || !$("overlay").classList.contains("visible"))return;
-  if(!preferredMusic)return;
+  if(!imageReady || !$("overlay").classList.contains("visible") || !preferredMusic)return;
   const id=musicTracks[current+1]?.[preferredMusic];
-  if(!id){$("embeddedMusic").textContent="Für diesen Song wird der direkte Player-Link noch ergänzt. Du kannst ihn bereits extern öffnen.";return;}
-  const frame=document.createElement("iframe");
-  frame.title=playlist[current].join(" – ");
-  frame.allow="autoplay; encrypted-media; fullscreen; picture-in-picture";
-  frame.allowFullscreen=true;
-  frame.referrerPolicy="strict-origin-when-cross-origin";
-  frame.src=preferredMusic==="spotify"?"https://open.spotify.com/embed/track/"+id+"?utm_source=generator":"https://www.youtube-nocookie.com/embed/"+id+"?autoplay=1&playsinline=1&rel=0";
-  frame.className=preferredMusic==="spotify"?"spotify-frame":"youtube-frame";
-  $("embeddedMusic").appendChild(frame);
-  const note=document.createElement("p");note.textContent="Falls die Musik nicht automatisch startet, drücke Play im Player.";$("embeddedMusic").appendChild(note);
+  const host=$("embeddedMusic");host.hidden=false;
+  let ytHost=$("persistentYoutube");
+  if(ytHost)ytHost.hidden=preferredMusic!=="youtube" || !id;
+  if(!id){const note=document.createElement("p");note.textContent="Für diesen Song wird der direkte Player-Link noch ergänzt. Du kannst ihn bereits extern öffnen.";host.appendChild(note);return;}
+  if(preferredMusic==="youtube"){
+    if(!ytHost){ytHost=document.createElement("div");ytHost.id="persistentYoutube";const slot=document.createElement("div");slot.id="youtubeSlot";ytHost.appendChild(slot);host.appendChild(ytHost);}
+    ytId=id;
+    if(ytReady){ytPlayer.loadVideoById(id);}
+    else if(!ytPlayer){
+      const init=()=>{if(ytPlayer)return;ytPlayer=new YT.Player("youtubeSlot",{host:"https://www.youtube-nocookie.com",videoId:ytId,playerVars:{autoplay:1,playsinline:1,rel:0,origin:location.origin},events:{onReady:()=>{ytReady=true;if(imageReady && preferredMusic==="youtube" && $("overlay").classList.contains("visible") && musicTracks[current+1]?.youtube===ytId){ytPlayer.loadVideoById(ytId);}else ytPlayer.pauseVideo();},onAutoplayBlocked:()=>{const n=$("musicPlaybackNote");if(n)n.textContent="Bitte einmal Play drücken, um Musik zu aktivieren.";}}});};
+      if(window.YT?.Player)init();else {window.onYouTubeIframeAPIReady=init;if(!document.getElementById("youtubeApi")){const script=document.createElement("script");script.id="youtubeApi";script.src="https://www.youtube.com/iframe_api";document.head.appendChild(script);}}
+    }
+  }else{
+    const frame=document.createElement("iframe");frame.title=playlist[current].join(" – ");frame.allow="autoplay; encrypted-media";frame.src="https://open.spotify.com/embed/track/"+id;frame.className="spotify-frame";host.appendChild(frame);
+  }
+  const note=document.createElement("p");note.id="musicPlaybackNote";note.textContent="Falls die Musik nicht automatisch startet, drücke Play im Player.";host.appendChild(note);
   revealSong();
 }
 function updateMusicPreference() {
