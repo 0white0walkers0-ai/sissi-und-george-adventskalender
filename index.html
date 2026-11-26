@@ -316,6 +316,23 @@ body.welcome .door { animation:welcome-in .85s ease both; animation-delay:calc(1
 .panel.finale { border-color:#ffe4a0; box-shadow:0 0 0 4px #dfb97944,0 0 55px #f4d18a55; }
 .panel.finale .scene::before,.panel.finale .scene::after { content:"✧ ─── ♛ ─── ✧"; }
 @media(max-width:600px) { .panel { padding:20px 14px; } .panel h2 { margin:12px 30px 24px; } .panel .scene { margin-left:8px; margin-right:8px; } }
+
+.panel .scene::before { top:-39px; }
+.panel .scene::after { bottom:-42px; }
+.panel .scene { margin-top:52px; margin-bottom:65px; }
+.message-heart { width:1.1em; height:1.1em; vertical-align:-.17em; margin-left:.35em; filter:drop-shadow(0 2px 4px #d9b67566); }
+.panel a.music { display:inline-flex; align-items:center; justify-content:center; gap:9px; }
+.panel a.music svg { width:22px; height:22px; flex-shrink:0; }
+.panel .close { width:38px; height:38px; padding:0; display:grid; place-items:center; }
+.snow-layer.front { z-index:0; }
+.living-frame { position:absolute; inset:-5px; border-radius:18px; pointer-events:none; z-index:4; animation:frame-glimmer 5s 2.5s ease-in-out both; }
+@keyframes frame-glimmer { 0%,100% { box-shadow:0 0 0 1px transparent; } 45% { box-shadow:0 0 0 1px #ffe4a0,0 0 22px #f4d18a88; } }
+.frame-star { position:absolute; color:#fff0b0; text-shadow:0 0 10px #ffd369; opacity:0; animation:corner-glimmer 3s 2.6s ease-in-out both; }
+.corner-0 { top:-9px; left:-5px; }.corner-1 { top:-9px; right:-5px; animation-delay:3.1s; }.corner-2 { bottom:-9px; right:-5px; animation-delay:3.6s; }.corner-3 { bottom:-9px; left:-5px; animation-delay:4.1s; }
+@keyframes corner-glimmer { 0%,100% { opacity:0; transform:scale(.5); } 45% { opacity:1; transform:scale(1.2); } }
+.finale-rain { position:absolute; inset:-18px -12px; overflow:hidden; pointer-events:none; z-index:5; }
+.finale-rain span { position:absolute; top:-15px; color:#ffe4a0; text-shadow:0 0 8px #ffcc65; opacity:0; animation:finale-fall 4s ease-out both; }
+@keyframes finale-fall { 0% { opacity:0; transform:translateY(0); } 20% { opacity:.8; } 100% { opacity:0; transform:translateY(55vh); } }
 </style>
 </head>
 <body>
@@ -359,11 +376,11 @@ body.welcome .door { animation:welcome-in .85s ease both; animation-delay:calc(1
     <div class="music-links">
       <a id="spotify" class="music spotify"
          target="_blank" rel="noopener noreferrer">
-        Spotify
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="#1ed760"/><path d="M5.5 9Q12 6 18.5 10M6.5 12.5Q12 10 17.5 13.5M8 16Q12 14 16 16.5" fill="none" stroke="#12382a" stroke-width="1.7" stroke-linecap="round"/></svg> Spotify
       </a>
       <a id="youtube" class="music youtube"
          target="_blank" rel="noopener noreferrer">
-        YouTube
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="1" y="4" width="22" height="16" rx="5" fill="#ff0033"/><path d="M10 8L16 12L10 16Z" fill="white"/></svg> YouTube
       </a>
     </div>
 
@@ -373,7 +390,7 @@ body.welcome .door { animation:welcome-in .85s ease both; animation-delay:calc(1
 
     <div class="navigation">
       <button id="prevDoor" onclick="navigate(-1)">← Zurück</button>
-      <button id="nextDoor" onclick="navigate(1)">Weiter →</button>
+      <button id="nextDoor" onclick="if(current===23)closeDoor();else navigate(1)">Weiter →</button>
     </div>
   </section>
 </div>
@@ -489,12 +506,14 @@ function openDoor(i) {
   if (!available(i+1)) return;
   current = i;
   $("prevDoor").disabled = i===0 || !available(i);
-  $("nextDoor").disabled = i===23 || !available(i+2);
+  $("nextDoor").disabled = i!==23 && !available(i+2);
+  $("nextDoor").textContent = i===23 ? "Zum Adventskalender" : "Weiter →";
   opened.add(i);
   renderCalendar();
 
   $("doorTitle").textContent = i===23 ? "Unser Weihnachtsfinale · 24" : "Türchen "+(i+1);
-  $("message").textContent = scenes[i][1];
+  $("message").textContent = scenes[i][1].replace(/❤️/g,"").trim();
+  if(i===23) $("message").insertAdjacentHTML("beforeend","<svg class=\"message-heart\" viewBox=\"0 0 40 40\" aria-label=\"Herz\"><defs><linearGradient id=\"heartGold\" x2=\"0.8\" y2=\"1\"><stop stop-color=\"#fff4c0\"/><stop offset=\".45\" stop-color=\"#e8b44e\"/><stop offset=\"1\" stop-color=\"#98601f\"/></linearGradient></defs><path d=\"M20 35C15 30 3 23 3 13C3 3 15 2 20 11C25 2 37 3 37 13C37 23 25 30 20 35Z\" fill=\"url(#heartGold)\" stroke=\"#ffe7a0\"/><path d=\"M7 13Q8 6 15 8\" fill=\"none\" stroke=\"#fff8dc\" stroke-width=\"2\" stroke-linecap=\"round\"/></svg>");
 
   const scene = $("scene");
   scene.innerHTML = "";
@@ -555,6 +574,10 @@ function openDoor(i) {
   document.querySelector(".panel").classList.toggle("finale", i===23);
   const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   if (!reduced) {
+    const frame=document.createElement("div");frame.className="living-frame";frame.setAttribute("aria-hidden","true");
+    for(let k=0;k<4;k++){const star=document.createElement("span");star.textContent="✦";star.className="frame-star corner-"+k;frame.appendChild(star);}
+    scene.appendChild(frame);
+    if(i===23){const rain=document.createElement("div");rain.className="finale-rain";rain.setAttribute("aria-hidden","true");for(let k=0;k<24;k++){const star=document.createElement("span");star.textContent=k%3?"·":"✦";star.style.left=(k*37%100)+"%";star.style.animationDelay=(2.5+k*.13)+"s";rain.appendChild(star);}scene.appendChild(rain);}
     for(let k=0;k<(i===23?42:18);k++){
       const spark=document.createElement("span");
       spark.className="spark"; spark.setAttribute("aria-hidden","true");
