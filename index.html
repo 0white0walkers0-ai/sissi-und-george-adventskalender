@@ -494,9 +494,8 @@ const musicTracks = {
   3:{spotify:"0tgVpDi06FyKpA1z0VMD4v",youtube:"2Vv-BfVoq4g"}
 };
 let musicTimer=null, imageReady=false, ytPlayer=null, ytReady=false, ytId=null;
-let spotifyController=null, spotifyAPI=null, spotifyCreating=false, spotifyReady=false, spotifyLoadedUri=null;
+
 function stopEmbeddedMusic(){
-  if(spotifyController){try{spotifyController.pause();}catch(e){}}
   clearTimeout(musicTimer);musicTimer=null;
   if(ytReady){try{ytPlayer.pauseVideo();}catch(e){}}
   $("embeddedMusic").hidden=true;
@@ -520,34 +519,15 @@ function showEmbeddedMusic(){
       if(window.YT?.Player)init();else {window.onYouTubeIframeAPIReady=init;if(!document.getElementById("youtubeApi")){const script=document.createElement("script");script.id="youtubeApi";script.src="https://www.youtube.com/iframe_api";document.head.appendChild(script);}}
     }
   }else{
-    let wrapper=$("persistentSpotify");
-    if(!wrapper){wrapper=document.createElement("div");wrapper.id="persistentSpotify";const slot=document.createElement("div");slot.id="spotifySlot";wrapper.appendChild(slot);host.appendChild(wrapper);}
-    wrapper.hidden=false;
-    const active=()=>imageReady && preferredMusic==="spotify" && $("overlay").classList.contains("visible") && !!musicTracks[current+1]?.spotify;
-    const playCurrent=()=>{
-      if(!spotifyController || !spotifyReady || !active())return;
-      const uri="spotify:track:"+musicTracks[current+1].spotify;
-      if(spotifyLoadedUri!==uri){spotifyLoadedUri=uri;spotifyController.loadUri(uri);}
-      spotifyController.play();
-    };
-    const init=()=>{
-      if(!spotifyAPI || spotifyCreating || spotifyController || !active())return;
-      spotifyCreating=true;
-      spotifyLoadedUri="spotify:track:"+musicTracks[current+1].spotify;
-      spotifyAPI.createController($("spotifySlot"),{width:"100%",height:152,uri:spotifyLoadedUri},controller=>{
-        spotifyController=controller;spotifyCreating=false;
-        controller.addListener("ready",()=>{
-          if(spotifyReady)return;
-          spotifyReady=true;
-          if(active())playCurrent();else controller.pause();
-        });
-      });
-    };
-    if(spotifyController)playCurrent();
-    else if(spotifyAPI)init();
-    else {window.onSpotifyIframeApiReady=api=>{spotifyAPI=api;init();};if(!$("spotifyApi")){const script=document.createElement("script");script.id="spotifyApi";script.src="https://open.spotify.com/embed/iframe-api/v1";script.async=true;script.onerror=()=>{const note=$("musicPlaybackNote");if(note)note.textContent="Spotify konnte nicht geladen werden. Bitte extern öffnen.";};document.head.appendChild(script);}}
+    const frame=document.createElement("iframe");
+    frame.title=playlist[current].join(" – ");
+    frame.src="https://open.spotify.com/embed/track/"+id;
+    frame.allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture";
+    frame.allowFullscreen=true;
+    frame.className="spotify-frame";
+    host.appendChild(frame);
   }
-  const note=document.createElement("p");note.id="musicPlaybackNote";note.textContent="Falls die Musik nicht automatisch startet, drücke Play im Player.";host.appendChild(note);
+  const note=document.createElement("p");note.id="musicPlaybackNote";note.textContent=preferredMusic==="spotify"?"Spotify-Test: Bitte Play manuell drücken.":"Falls die Musik nicht automatisch startet, drücke Play im Player.";host.appendChild(note);
   revealSong();
 }
 function updateMusicPreference() {
