@@ -418,7 +418,10 @@ body.welcome .door { animation:welcome-in .85s ease both; animation-delay:calc(1
 #pilotMusic.pilot-preparing {opacity:0;pointer-events:none}
 #pilotStage {display:contents}
 #pilotStage.pilot-active {display:flow-root;overflow-anchor:none}
-#pilotStage.pilot-expanding {overflow:hidden}
+#pilotStage.pilot-expanding {overflow:hidden;transform-origin:top center;will-change:transform}
+body.pilot-snow-paused .snowflake {animation-play-state:paused!important}
+#pilotStage.pilot-active #embeddedMusic.pilot-spotify-slot {box-sizing:border-box}
+#pilotStage.pilot-expanding .pilot-ornament {opacity:0}
 #pilotStage.pilot-active #embeddedMusic.pilot-spotify-slot {display:flow-root;min-height:190px}
 #pilotStage.pilot-active #embeddedMusic.pilot-spotify-slot p {line-height:18px;margin:6px 0}
 #pilotStage.pilot-active #embeddedMusic.pilot-spotify-slot iframe {height:152px}
@@ -652,8 +655,8 @@ for(const mode of Object.keys(pilotSolved)){
 const pilotMode=()=>preview?"preview":"christmas";
 const pilotLocked=()=>current===0&&(!pilotSolved[pilotMode()]||pilotAnimating);
 let pilotHintCount=0, pilotAnimating=false, pilotTimers=[], pilotChoosing=false;
-let pilotExpansion=null;
-function cancelPilotAnimation(){pilotTimers.forEach(clearTimeout);pilotTimers=[];pilotAnimating=false;if(pilotExpansion){pilotExpansion.cancel();pilotExpansion=null;}$("pilotStage").classList.remove("pilot-expanding");$("riddlePilot").classList.remove("departing","celebrating");$("pilotMusic").classList.remove("pilot-arriving","pilot-preparing");}
+let pilotExpansion=null, pilotNavigationMotion=null;
+function cancelPilotAnimation(){pilotTimers.forEach(clearTimeout);pilotTimers=[];pilotAnimating=false;if(pilotExpansion){pilotExpansion.cancel();pilotExpansion=null;}if(pilotNavigationMotion){pilotNavigationMotion.cancel();pilotNavigationMotion=null;}document.body.classList.remove("pilot-snow-paused");$("pilotStage").classList.remove("pilot-expanding");$("riddlePilot").classList.remove("departing","celebrating");$("pilotMusic").classList.remove("pilot-arriving","pilot-preparing");}
 function pilotLater(fn,ms){pilotTimers.push(setTimeout(fn,ms));}
 function renderPilot(){
   const active=current===0, solved=active&&!pilotLocked();
@@ -680,23 +683,30 @@ $("pilotReveal").addEventListener("click",()=>{
   if(!imageReady||!pilotLocked()||pilotAnimating)return;
   const mode=pilotMode();pilotSolved[mode]=true;
   try {localStorage.setItem("advent-riddle-2026-"+mode+"-01","1");}catch(e){}
-  const finish=()=>{pilotAnimating=false;$("pilotMusic").hidden=false;$("pilotMusic").classList.remove("pilot-preparing");$("nextDoor").disabled=!available(current+2);showEmbeddedMusic();};
+  const finish=()=>{document.body.classList.remove("pilot-snow-paused");pilotAnimating=false;$("pilotMusic").hidden=false;$("pilotMusic").classList.remove("pilot-preparing");$("nextDoor").disabled=!available(current+2);showEmbeddedMusic();};
   if(window.matchMedia("(prefers-reduced-motion: reduce)").matches){renderPilot();finish();return;}
   pilotAnimating=true;
+  document.body.classList.add("pilot-snow-paused");
   $("riddlePilot").classList.add("departing");
   pilotLater(()=>{
     const stage=$("pilotStage");
-    const from=stage.getBoundingClientRect().height;
+    const first=stage.getBoundingClientRect();
+    const nav=document.querySelector(".panel .navigation");
+    const navFirst=nav?.getBoundingClientRect();
     stage.classList.add("pilot-expanding");
     $("riddlePilot").classList.remove("departing");
     $("riddlePilot").classList.add("celebrating");
     pilotAnimating=false;renderPilot();pilotAnimating=true;
     $("pilotMusic").classList.add("pilot-preparing");
     $("pilotMusic").hidden=false;
-    const to=stage.getBoundingClientRect().height;
-    if(typeof stage.animate==="function"){
-      pilotExpansion=stage.animate([{height:from+"px"},{height:to+"px"}],{duration:850,easing:"cubic-bezier(.22,.61,.36,1)",fill:"both"});
-      pilotExpansion.onfinish=()=>{if(pilotExpansion){pilotExpansion.cancel();pilotExpansion=null;}stage.classList.remove("pilot-expanding");};
+    const last=stage.getBoundingClientRect();
+    const navLast=nav?.getBoundingClientRect();
+    if(typeof stage.animate==="function"&&last.height>0){
+      const timing={duration:600,easing:"cubic-bezier(.22,.61,.36,1)",fill:"both"};
+      const dy=first.top-last.top;
+      pilotExpansion=stage.animate([{transform:"translateY("+dy+"px) scaleY("+Math.max(.05,first.height/last.height)+")"},{transform:"none"}],timing);
+      if(navFirst&&navLast)pilotNavigationMotion=nav.animate([{transform:"translateY("+(navFirst.top-navLast.top)+"px)"},{transform:"none"}],timing);
+      pilotExpansion.onfinish=()=>{if(pilotExpansion){pilotExpansion.cancel();pilotExpansion=null;}if(pilotNavigationMotion){pilotNavigationMotion.cancel();pilotNavigationMotion=null;}stage.classList.remove("pilot-expanding");};
     }else stage.classList.remove("pilot-expanding");
   },400);
   pilotLater(()=>{
@@ -709,8 +719,8 @@ $("pilotReveal").addEventListener("click",()=>{
       $("pilotAnswer").appendChild(spark);
       spark.addEventListener("animationend",()=>spark.remove(),{once:true});
     }
-  },1450);
-  pilotLater(()=>{$("pilotMusic").classList.add("pilot-arriving");finish();},2500);
+  },1150);
+  pilotLater(()=>{$("pilotMusic").classList.add("pilot-arriving");finish();},2000);
 });
 
 function available(day) {
