@@ -180,17 +180,19 @@ footer {
 @media(prefers-reduced-motion:reduce) {
   * { transition:none !important; }
 }
-.scene { position:relative; perspective:850px; perspective-origin:35% 50%; overflow:visible; isolation:isolate; }
-.scene .door-cover { position:absolute; inset:0; z-index:2; display:flex; align-items:center; justify-content:center; border-radius:15px; color:var(--gold); font:bold 52px Georgia,serif; transform-origin:left center; transform-style:preserve-3d; animation:swing-door 1.6s cubic-bezier(.35,.05,.2,1) forwards; pointer-events:none; }
-.door-cover::before,.door-cover::after { content:""; position:absolute; inset:0; border-radius:15px; border:3px solid #dfb979; }
-.door-cover::before { background:linear-gradient(115deg,#d05a65,#8e233b 45%,#541324); transform:translateZ(5px); box-shadow:inset 0 0 0 7px #741a2c,inset 0 0 0 9px #dfb979,8px 12px 22px #0007; }
-.door-cover::after { background:linear-gradient(120deg,#6b302b,#a86c46); transform:translateZ(-5px) rotateY(180deg); box-shadow:inset 0 0 0 9px #613225; }
-.door-cover .door-face { position:relative; z-index:1; transform:translateZ(7px); backface-visibility:hidden; text-shadow:0 3px 4px #0008; }
-.door-cover .door-edge { position:absolute; right:0; top:8px; bottom:8px; width:10px; background:#bd8c56; transform:translateX(50%) rotateY(90deg); }
-.scene:has(.door-cover) img { animation:scene-reveal 1.6s ease-out both; }
-@keyframes swing-door { 0%,12% { transform:rotateY(0); opacity:1; } 75% { transform:rotateY(-118deg); opacity:1; } 90% { transform:rotateY(-138deg); opacity:1; } 100% { transform:rotateY(-145deg); opacity:0; } }
-@keyframes scene-reveal { from { filter:brightness(.45); transform:scale(.97); } to { filter:brightness(1); transform:scale(1); } }
-@media(prefers-reduced-motion:reduce) { .scene .door-cover { display:none; animation:none; } .scene img { animation:none !important; } }
+.scene { position:relative; perspective:850px; overflow:visible; isolation:isolate; margin:32px 12px 42px; border:2px solid var(--gold); box-shadow:inset 0 0 35px #0009; }
+.scene img { position:relative; z-index:1; transform-origin:center center; animation:pop-scene 2.4s cubic-bezier(.2,.7,.2,1) both; box-shadow:0 12px 28px #0007; }
+.door-cover { position:absolute; inset:0; z-index:3; pointer-events:none; perspective:850px; transform-style:preserve-3d; }
+.curtain { position:absolute; top:0; bottom:0; width:50.2%; background:linear-gradient(180deg,#ffffff22,transparent 30%,#0005),repeating-linear-gradient(90deg,#3b0718 0%,#721027 7%,#b43b51 15%,#d15a68 19%,#85152f 26%,#3b0718 33%); box-shadow:0 8px 20px #0009,inset 0 -5px #dfb979; border-top:4px solid #dfb979; }
+.curtain.left { left:0; border-radius:12px 0 0 12px; transform-origin:left center; animation:curtain-left 1.65s cubic-bezier(.4,0,.2,1) forwards; }
+.curtain.right { right:0; border-radius:0 12px 12px 0; transform-origin:right center; animation:curtain-right 1.65s cubic-bezier(.4,0,.2,1) forwards; }
+.door-face { position:absolute; inset:0; display:grid; place-items:center; color:var(--gold); font:bold 52px Georgia,serif; text-shadow:0 3px 8px #000; animation:curtain-number .65s ease forwards; }
+@keyframes curtain-number { 0%,25% { opacity:1; } 100% { opacity:0; } }
+@keyframes curtain-left { 0%,12% { transform:translateZ(18px) scaleX(1); } 85% { opacity:1; } 100% { transform:translateX(-12%) translateZ(35px) rotateY(-20deg) scaleX(.10); opacity:0; } }
+@keyframes curtain-right { 0%,12% { transform:translateZ(18px) scaleX(1); } 85% { opacity:1; } 100% { transform:translateX(12%) translateZ(35px) rotateY(20deg) scaleX(.10); opacity:0; } }
+@keyframes pop-scene { 0%,15% { transform:translateZ(-160px) scale(.78); filter:brightness(.45); } 60% { transform:translateZ(0) scale(.98); filter:brightness(1); } 85% { transform:translateZ(45px) scale(1.12); } 100% { transform:translateZ(25px) scale(1.10); filter:brightness(1); } }
+@media(max-width:600px) { .scene { margin:28px 8px 36px; } .scene img { max-width:92%; } }
+@media(prefers-reduced-motion:reduce) { .scene .door-cover { display:none; } .scene img { animation:none !important; } }
 </style>
 </head>
 <body>
@@ -389,11 +391,14 @@ function openDoor(i) {
   const face = document.createElement("span");
   face.className = "door-face";
   face.textContent = (i+1) + " ✦";
-  const edge = document.createElement("span");
-  edge.className = "door-edge";
-  cover.append(face, edge);
+  const left = document.createElement("span");
+  left.className = "curtain left";
+  const right = document.createElement("span");
+  right.className = "curtain right";
+  cover.append(left, right, face);
   scene.appendChild(cover);
-  cover.addEventListener("animationend", () => cover.remove(), {once:true});
+  right.addEventListener("animationend", () => cover.remove(), {once:true});
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) cover.remove();
 
   const query = encodeURIComponent(
     playlist[i][0]+" "+playlist[i][1]
