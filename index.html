@@ -291,6 +291,31 @@ body.welcome .hero-photo { animation:hero-welcome 2.4s ease-out both,hero-float 
 body.welcome header h1,body.welcome .hero-title,body.welcome .hero-tagline,body.welcome .hero-intro { animation:welcome-in 1.5s ease both; }
 body.welcome .door { animation:welcome-in .85s ease both; animation-delay:calc(1.7s + var(--door-index,0)*.095s); }
 @media(prefers-reduced-motion:reduce) { body.welcome .hero-photo,body.welcome header h1,body.welcome .hero-title,body.welcome .hero-tagline,body.welcome .hero-intro,body.welcome .door { animation:none; } }
+
+.panel { background:radial-gradient(ellipse at top,#31534b,#153630 65%,#102b30); border:1px solid #dfb979; box-shadow:0 0 0 4px #dfb97922,0 18px 65px #0009; padding:30px 28px; }
+.panel h2 { font:600 clamp(24px,4vw,34px)/1.3 "Cormorant Garamond",Georgia,serif; margin:12px 38px 24px; }
+.panel h2::before,.panel h2::after { content:"♡"; color:#dfb979; font-size:.65em; margin:0 .55em; }
+.panel .scene { border:1px solid #dfb979; background:radial-gradient(ellipse at top,#d9b67530,transparent 80%); box-shadow:0 0 0 3px #dfb97922; }
+.panel .scene img { outline:1px solid #dfb979; outline-offset:2px; }
+.panel .stage-ornament { display:none; }
+.panel .scene::before,.panel .scene::after { content:"✧ ─── ♡ ─── ✧"; position:absolute; left:50%; transform:translateX(-50%); color:#dfb979; white-space:nowrap; font:18px Georgia,serif; pointer-events:none; }
+.panel .scene::before { top:-30px; }
+.panel .scene::after { bottom:-32px; }
+.panel .message { font:600 italic clamp(23px,3.5vw,30px)/1.4 "Cormorant Garamond",Georgia,serif; color:#fff0d0; margin:24px auto; }
+.music-divider { color:#dfb979; letter-spacing:.35em; font-size:16px; }
+.music-heading { font:600 italic 25px "Cormorant Garamond",Georgia,serif; color:#f4d18a; margin:12px 0; }
+.panel .music-links { margin:14px 0; }
+.panel a.music { min-width:125px; border:1px solid #dfb979; border-radius:9px; font-weight:500; box-shadow:0 4px 10px #0004; }
+.panel .spotify { background:linear-gradient(145deg,#245e46,#143c30); }
+.panel .youtube { background:linear-gradient(145deg,#a32b44,#65182c); }
+.panel #musicPreference { font-size:13px; color:#e5d3af; }
+.panel #forgetMusic { background:transparent; color:#f4d18a; border:1px solid #dfb97966; font-size:13px; }
+.panel .navigation { border-top:1px solid #dfb97944; padding-top:18px; }
+.panel .navigation button,.panel .close { background:linear-gradient(145deg,#f8e6b9,#dfb979); color:#25373a; border:1px solid #ffe4a0; border-radius:9px; font-size:14px; }
+.panel .navigation button:disabled { opacity:.35; cursor:default; }
+.panel.finale { border-color:#ffe4a0; box-shadow:0 0 0 4px #dfb97944,0 0 55px #f4d18a55; }
+.panel.finale .scene::before,.panel.finale .scene::after { content:"✧ ─── ♛ ─── ✧"; }
+@media(max-width:600px) { .panel { padding:20px 14px; } .panel h2 { margin:12px 30px 24px; } .panel .scene { margin-left:8px; margin-right:8px; } }
 </style>
 </head>
 <body>
@@ -328,18 +353,17 @@ body.welcome .door { animation:welcome-in .85s ease both; animation-delay:calc(1
 
     <p id="message" class="message"></p>
 
-    <p>🎶 Ein Lied wartet auf dich …</p>
-    <p>Wähle deinen Musikdienst und
-       entdecke die Überraschung!</p>
+    <div class="music-divider" aria-hidden="true">✧ ♡ ✧</div>
+    <h3 class="music-heading">Eine Melodie für diesen Moment</h3>
 
     <div class="music-links">
       <a id="spotify" class="music spotify"
          target="_blank" rel="noopener noreferrer">
-        🎵 Spotify
+        Spotify
       </a>
       <a id="youtube" class="music youtube"
          target="_blank" rel="noopener noreferrer">
-        ▶ YouTube
+        YouTube
       </a>
     </div>
 
@@ -348,8 +372,8 @@ body.welcome .door { animation:welcome-in .85s ease both; animation-delay:calc(1
     <div id="reveal" class="reveal" aria-live="polite"></div>
 
     <div class="navigation">
-      <button onclick="navigate(-1)">← Zurück</button>
-      <button onclick="navigate(1)">Weiter →</button>
+      <button id="prevDoor" onclick="navigate(-1)">← Zurück</button>
+      <button id="nextDoor" onclick="navigate(1)">Weiter →</button>
     </div>
   </section>
 </div>
@@ -418,7 +442,7 @@ let preferredMusic = "";
 try { preferredMusic = localStorage.getItem("preferredMusic") || ""; } catch(e) {}
 if (!["spotify","youtube"].includes(preferredMusic)) preferredMusic = "";
 function updateMusicPreference() {
-  $("musicPreference").textContent = preferredMusic ? "Bevorzugter Musikdienst: " + (preferredMusic === "spotify" ? "Spotify" : "YouTube") : "Wähle deinen bevorzugten Musikdienst.";
+  $("musicPreference").textContent = preferredMusic ? "Bevorzugter Musikdienst: " + (preferredMusic === "spotify" ? "Spotify" : "YouTube") : "Wähle deinen Musikdienst.";
   $("forgetMusic").hidden = !preferredMusic;
 }
 function rememberMusic(service) {
@@ -464,10 +488,12 @@ function renderCalendar() {
 function openDoor(i) {
   if (!available(i+1)) return;
   current = i;
+  $("prevDoor").disabled = i===0 || !available(i);
+  $("nextDoor").disabled = i===23 || !available(i+2);
   opened.add(i);
   renderCalendar();
 
-  $("doorTitle").textContent = "🎁 Türchen "+(i+1);
+  $("doorTitle").textContent = i===23 ? "Unser Weihnachtsfinale · 24" : "Türchen "+(i+1);
   $("message").textContent = scenes[i][1];
 
   const scene = $("scene");
