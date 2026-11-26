@@ -225,6 +225,13 @@ header,.controls,.calendar,footer { position:relative; }
 .stage-ornament.bottom { bottom:-25px; height:29px; }
 .stage-ornament svg { display:block; width:100%; height:100%; overflow:visible; }
 @media(max-width:600px) { .scene { margin-top:38px; margin-bottom:44px; } .stage-ornament { height:27px; } .stage-ornament.top { top:-20px; } .stage-ornament.bottom { bottom:-21px; height:24px; } }
+
+@keyframes pop-scene { 0%,15% { transform:translateZ(-160px) scale(.78); filter:brightness(.45); } 100% { transform:translateZ(25px) scale(1.10); filter:brightness(1); } }
+.scene img { animation-timing-function:cubic-bezier(.22,.61,.36,1); }
+.stage-ornament { height:48px; width:min(98%,460px); }
+.stage-ornament.top { top:-32px; }
+.stage-ornament.bottom { bottom:-33px; height:44px; }
+@media(max-width:600px) { .stage-ornament { height:36px; } .stage-ornament.top { top:-25px; } .stage-ornament.bottom { bottom:-26px; height:34px; } }
 </style>
 </head>
 <body>
@@ -434,13 +441,23 @@ function openDoor(i) {
     const ornament=document.createElement("div");
     ornament.className="stage-ornament "+position;
     ornament.setAttribute("aria-hidden","true");
-    const branches=Array.from({length:12},(_,k)=>{
-      const x=35+k*30, y=18+Math.abs(k-5.5)*1.1;
-      return '<g transform="translate('+x+' '+y+')"><path d="M-25 0 Q0 -8 25 0" stroke="#244e3b" stroke-width="5" fill="none"/><path d="M-18 0 l-12 -10 M-12 -2 l-8 -12 M-4 -3 l-3 -13 M5 -3 l6 -12 M13 -1 l12 -9 M-13 1 l-9 9 M0 0 l-3 12 M12 1 l12 9" stroke="#54856a" stroke-width="3" stroke-linecap="round" fill="none"/></g>';
-    }).join("");
-    const baubles=[70,130,270,330].map((x,k)=>'<circle cx="'+x+'" cy="'+(23+k%2*4)+'" r="5" fill="#d9ad58" stroke="#ffe2a0"/><circle cx="'+(x-1.5)+'" cy="'+(21+k%2*4)+'" r="1.5" fill="#fff4c5"/>').join("");
-    const center=position==="top"?'<path d="M200 18 Q174 -3 170 12 Q170 28 200 18 Q226 -3 230 12 Q230 28 200 18 L214 36 L200 29 L186 36 Z" fill="#a51f39" stroke="#f4d18a" stroke-width="1.3"/><circle cx="200" cy="18" r="5" fill="#c64a55" stroke="#f4d18a"/>':'<path d="M200 7 L203 16 L213 16 L205 22 L208 32 L200 26 L192 32 L195 22 L187 16 L197 16 Z" fill="#f4d18a"/>';
-    ornament.innerHTML='<svg viewBox="0 0 400 40" xmlns="http://www.w3.org/2000/svg"><path d="M8 26 Q200 4 392 26" stroke="#dfb979" stroke-width="1.5" fill="none"/>'+branches+baubles+center+'</svg>';
+    const id="ornament-"+position;
+    const defs='<defs><radialGradient id="'+id+'-gold" cx="30%" cy="25%"><stop stop-color="#fff6cc"/><stop offset=".35" stop-color="#e9c57a"/><stop offset=".75" stop-color="#ad7730"/><stop offset="1" stop-color="#694019"/></radialGradient><linearGradient id="'+id+'-red" x2="0.8" y2="1"><stop stop-color="#e05b65"/><stop offset=".45" stop-color="#a51f39"/><stop offset="1" stop-color="#4c0c20"/></linearGradient></defs>';
+    let branches="";
+    for(let k=0;k<24;k++){
+      const x=19+k*15.7,y=27+Math.abs(k-11.5)*.55;
+      const angle=(k<12?-1:1)*(12+(k%4)*5);
+      branches+='<g transform="translate('+x+' '+y+') rotate('+angle+')"><path d="M-17 0 Q0 -5 18 0" stroke="#72513a" stroke-width="1.4" fill="none"/>';
+      for(let j=0;j<13;j++){
+        const t=-16+j*2.5, len=5+Math.sin(j/12*Math.PI)*9;
+        branches+='<path d="M'+t+' -1 l'+(-5-j%3)+' '+(-len)+' M'+t+' 0 l'+(-4-j%3)+' '+(len*.78)+'" stroke="'+["#193d2d","#32634a","#719879","#28523c"][ (j+k)%4]+'" stroke-width="1.6" stroke-linecap="round" fill="none"/>';
+      }
+      branches+='</g>';
+    }
+    const baubles=[48,96,143,257,304,352].map((x,k)=>{const y=30+k%2*5, radius=4+k%3;return '<path d="M'+x+' '+(y-radius-5)+' v5" stroke="#dfb979"/><circle cx="'+x+'" cy="'+y+'" r="'+radius+'" fill="url(#'+id+'-gold)"/><circle cx="'+(x-1.5)+'" cy="'+(y-2)+'" r="1" fill="#fff9dc"/>';}).join("");
+    const lights=Array.from({length:19},(_,k)=>{const x=22+k*19.7,y=20+(k%3)*5;return '<circle cx="'+x+'" cy="'+y+'" r="4" fill="#ffd77b" opacity=".15"/><circle cx="'+x+'" cy="'+y+'" r="1.6" fill="#fff4c8"/>';}).join("");
+    const center=position==="top"?'<g fill="url(#'+id+'-red)" stroke="#d49b70" stroke-width=".7"><path d="M200 23 C180 3 161 6 165 21 C168 34 184 30 200 23 C216 3 239 6 235 21 C232 34 216 30 200 23"/><path d="M196 24 Q188 36 176 46 L189 42 L194 49 L203 26 M204 24 Q212 36 224 46 L211 42 L206 49 L197 26"/><ellipse cx="200" cy="23" rx="6" ry="5"/></g>':'<path d="M200 13 L204 22 L214 23 L207 30 L209 40 L200 35 L191 40 L193 30 L186 23 L196 22 Z" fill="url(#'+id+'-gold)" stroke="#ffe2a0"/>';
+    ornament.innerHTML='<svg viewBox="0 0 400 52" xmlns="http://www.w3.org/2000/svg">'+defs+branches+baubles+lights+center+'</svg>';
     scene.appendChild(ornament);
   }
   document.querySelector(".panel").classList.toggle("finale", i===23);
