@@ -232,12 +232,15 @@ header,.controls,.calendar,footer { position:relative; }
 .stage-ornament.top { top:-32px; }
 .stage-ornament.bottom { bottom:-33px; height:44px; }
 @media(max-width:600px) { .stage-ornament { height:36px; } .stage-ornament.top { top:-25px; } .stage-ornament.bottom { bottom:-26px; height:34px; } }
+.hero-photo { display:block; width:min(100%,540px); height:auto; margin:22px auto 18px; border:3px solid #dfb979; border-radius:16px; box-shadow:0 0 0 4px #dfb97933,0 12px 35px #0007; box-sizing:border-box; } .hero-photo[hidden] { display:none; } .hero-title { font:italic clamp(22px,4vw,36px) Georgia,serif; color:#f4d18a; margin:20px 0 12px; text-shadow:0 2px 8px #0007; }
 </style>
 </head>
 <body>
 
 <header>
   <h1>🎄 Sissi & George 🦄</h1>
+  <img class="hero-photo" src="Bilder/Titelbild.avif" alt="Sissi und George begrüßen Waja am Hamburger Hauptbahnhof" width="1402" height="1122" onerror="this.hidden=true" onload="this.hidden=false" hidden>
+  <h2 class="hero-title">Unsere 24 schönsten Momente</h2>
   <p>Unser Adventskalender ❤️<br>
   24 Türchen · 24 Lieder · ganz viel Liebe</p>
 </header>
