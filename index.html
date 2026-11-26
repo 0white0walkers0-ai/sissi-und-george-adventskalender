@@ -405,6 +405,24 @@ body.welcome .door { animation:welcome-in .85s ease both; animation-delay:calc(1
 #pilotListening[hidden]{display:none!important}
 #riddlePilot.solved + #pilotMusic #musicPreference {margin:8px 0}
 #riddlePilot.solved + #pilotMusic .music-links {margin:10px 0}
+/* Smooth compact pilot expansion */
+#riddlePilot.solved {padding-top:12px;padding-bottom:4px}
+#pilotAnswer svg {width:88px;margin:6px auto 10px}
+#pilotAnswer .pilot-caption {margin:4px 0}
+#pilotAnswer .pilot-song {margin:4px 0}
+#pilotAnswer .pilot-artist {margin:4px 0}
+#riddlePilot.solved .pilot-reaction {margin:8px 0 2px}
+#riddlePilot.solved + #pilotMusic #pilotListening {margin:4px 0 10px}
+#riddlePilot.solved + #pilotMusic #embeddedMusic {margin:8px auto}
+#riddlePilot.solved + #pilotMusic #embeddedMusic p {margin:6px 0}
+#pilotMusic.pilot-preparing {opacity:0;pointer-events:none}
+#pilotMusic.pilot-preparing #embeddedMusic:empty {display:block;min-height:180px}
+#pilotMusic.pilot-preparing #embeddedMusic {min-height:180px}
+#pilotStage.pilot-expanding {overflow:hidden;overflow-anchor:none}
+#pilotStage {display:contents}
+#pilotStage.pilot-expanding {display:block}
+#riddlePilot.celebrating #pilotAnswer svg {animation-delay:.2s}
+#riddlePilot.celebrating .pilot-reaction {animation-delay:1.4s}
 </style>
 </head>
 <body>
@@ -442,6 +460,7 @@ body.welcome .door { animation:welcome-in .85s ease both; animation-delay:calc(1
 
     <p id="message" class="message"></p>
 
+    <div id="pilotStage">
     <section id="riddlePilot" hidden aria-label="Musikalisches Rätsel">
       <div id="pilotQuestion"><h3>Welche Melodie versteckt sich hier?</h3>
       <p>Schau genau hin, lies zwischen den Zeilen und hör auf dein Herz.</p></div>
@@ -471,6 +490,7 @@ body.welcome .door { animation:welcome-in .85s ease both; animation-delay:calc(1
     <p id="musicPreference" aria-live="polite"></p>
     <button id="forgetMusic" type="button" hidden>Musikdienst ändern</button>
     <div id="reveal" class="reveal" aria-live="polite"></div>
+    </div>
     </div>
 
     <div class="navigation">
@@ -575,9 +595,9 @@ function stopEmbeddedMusic(){
   clearTimeout(musicTimer);musicTimer=null;
   $("embeddedMusic").replaceChildren();
 }
-function showEmbeddedMusic(){
+function showEmbeddedMusic(pilotPreparing=false){
   stopEmbeddedMusic();
-  if(!imageReady || !$("overlay").classList.contains("visible") || pilotLocked())return;
+  if(!imageReady || !$("overlay").classList.contains("visible") || (pilotLocked()&&!pilotPreparing))return;
   const service=current===0?(pilotChoosing?"":preferredMusic||"spotify"):preferredMusic;
   if(!service)return;
   const id=musicTracks[current+1]?.[service];
@@ -590,7 +610,7 @@ function showEmbeddedMusic(){
   frame.src=service==="spotify"?"https://open.spotify.com/embed/track/"+id+"?utm_source=generator":"https://www.youtube-nocookie.com/embed/"+id+"?autoplay=1&playsinline=1&rel=0";
   frame.className=service==="spotify"?"spotify-frame":"youtube-frame";
   $("embeddedMusic").appendChild(frame);
-  const note=document.createElement("p");note.textContent="Falls die Musik nicht automatisch startet, drücke Play im Player.";$("embeddedMusic").appendChild(note);
+  const note=document.createElement("p");note.textContent=current===0?"Falls nötig, drücke Play im Player.":"Falls die Musik nicht automatisch startet, drücke Play im Player.";$("embeddedMusic").appendChild(note);
   revealSong();
 }
 function updateMusicPreference() {
@@ -627,7 +647,8 @@ for(const mode of Object.keys(pilotSolved)){
 const pilotMode=()=>preview?"preview":"christmas";
 const pilotLocked=()=>current===0&&(!pilotSolved[pilotMode()]||pilotAnimating);
 let pilotHintCount=0, pilotAnimating=false, pilotTimers=[], pilotChoosing=false;
-function cancelPilotAnimation(){pilotTimers.forEach(clearTimeout);pilotTimers=[];pilotAnimating=false;$("riddlePilot").classList.remove("departing","celebrating");$("pilotMusic").classList.remove("pilot-arriving");}
+let pilotExpansion=null;
+function cancelPilotAnimation(){pilotTimers.forEach(clearTimeout);pilotTimers=[];pilotAnimating=false;if(pilotExpansion){pilotExpansion.cancel();pilotExpansion=null;}$("pilotStage").classList.remove("pilot-expanding");$("riddlePilot").classList.remove("departing","celebrating");$("pilotMusic").classList.remove("pilot-arriving","pilot-preparing");}
 function pilotLater(fn,ms){pilotTimers.push(setTimeout(fn,ms));}
 function renderPilot(){
   const active=current===0, solved=active&&!pilotLocked();
@@ -654,15 +675,25 @@ $("pilotReveal").addEventListener("click",()=>{
   if(!imageReady||!pilotLocked()||pilotAnimating)return;
   const mode=pilotMode();pilotSolved[mode]=true;
   try {localStorage.setItem("advent-riddle-2026-"+mode+"-01","1");}catch(e){}
-  const finish=()=>{pilotAnimating=false;$("pilotMusic").hidden=false;$("nextDoor").disabled=!available(current+2);showEmbeddedMusic();};
+  const finish=(prepared=false)=>{pilotAnimating=false;$("pilotMusic").hidden=false;$("pilotMusic").classList.remove("pilot-preparing");$("nextDoor").disabled=!available(current+2);if(!prepared)showEmbeddedMusic();else revealSong();};
   if(window.matchMedia("(prefers-reduced-motion: reduce)").matches){renderPilot();finish();return;}
   pilotAnimating=true;
   $("riddlePilot").classList.add("departing");
   pilotLater(()=>{
+    const stage=$("pilotStage");
+    stage.classList.add("pilot-expanding");
+    const from=stage.getBoundingClientRect().height;
     $("riddlePilot").classList.remove("departing");
     $("riddlePilot").classList.add("celebrating");
     pilotAnimating=false;renderPilot();pilotAnimating=true;
-    $("pilotMusic").hidden=true;
+    $("pilotMusic").classList.add("pilot-preparing");
+    $("pilotMusic").hidden=false;
+    showEmbeddedMusic(true);
+    const to=stage.getBoundingClientRect().height;
+    if(typeof stage.animate==="function"){
+      pilotExpansion=stage.animate([{height:from+"px"},{height:to+"px"}],{duration:850,easing:"cubic-bezier(.22,.61,.36,1)",fill:"both"});
+      pilotExpansion.onfinish=()=>{if(pilotExpansion){pilotExpansion.cancel();pilotExpansion=null;}stage.classList.remove("pilot-expanding");};
+    }else stage.classList.remove("pilot-expanding");
   },400);
   pilotLater(()=>{
     for(let k=0;k<24;k++){
@@ -670,12 +701,12 @@ $("pilotReveal").addEventListener("click",()=>{
       const angle=k*2.399,distance=55+k%9*11;
       spark.style.setProperty("--dx",Math.cos(angle)*distance+"px");
       spark.style.setProperty("--dy",Math.sin(angle)*distance+"px");
-      spark.style.top="85px";spark.style.animationDelay=(k%6*.035)+"s";
+      spark.style.top="70px";spark.style.animationDelay=(k%6*.035)+"s";
       $("pilotAnswer").appendChild(spark);
       spark.addEventListener("animationend",()=>spark.remove(),{once:true});
     }
-  },800);
-  pilotLater(()=>{$("pilotMusic").classList.add("pilot-arriving");finish();},2000);
+  },900);
+  pilotLater(()=>{$("pilotMusic").classList.add("pilot-arriving");finish(true);},1800);
 });
 
 function available(day) {
