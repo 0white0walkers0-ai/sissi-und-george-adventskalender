@@ -359,6 +359,8 @@ body.welcome .door { animation:welcome-in .85s ease both; animation-delay:calc(1
 .youtube-frame{aspect-ratio:16/9;min-height:200px}
 #embeddedMusic[hidden],#persistentYoutube[hidden]{display:none!important}
 #persistentYoutube iframe{width:100%;aspect-ratio:16/9;height:auto;min-height:200px}
+#persistentSpotify[hidden]{display:none!important}
+#persistentSpotify iframe{width:100%;height:152px;border:0;border-radius:12px}
 </style>
 </head>
 <body>
@@ -492,11 +494,13 @@ const musicTracks = {
   3:{spotify:"0tgVpDi06FyKpA1z0VMD4v",youtube:"2Vv-BfVoq4g"}
 };
 let musicTimer=null, imageReady=false, ytPlayer=null, ytReady=false, ytId=null;
+let spotifyController=null, spotifyAPI=null, spotifyCreating=false;
 function stopEmbeddedMusic(){
+  if(spotifyController){try{spotifyController.pause();}catch(e){}}
   clearTimeout(musicTimer);musicTimer=null;
   if(ytReady){try{ytPlayer.pauseVideo();}catch(e){}}
   $("embeddedMusic").hidden=true;
-  $("embeddedMusic").querySelectorAll(":scope > :not(#persistentYoutube)").forEach(el=>el.remove());
+  $("embeddedMusic").querySelectorAll(":scope > :not(#persistentYoutube):not(#persistentSpotify)").forEach(el=>el.remove());
 }
 function showEmbeddedMusic(){
   stopEmbeddedMusic();
@@ -505,6 +509,7 @@ function showEmbeddedMusic(){
   const host=$("embeddedMusic");host.hidden=false;
   let ytHost=$("persistentYoutube");
   if(ytHost)ytHost.hidden=preferredMusic!=="youtube" || !id;
+  const spHost=$("persistentSpotify");if(spHost)spHost.hidden=preferredMusic!=="spotify" || !id;
   if(!id){const note=document.createElement("p");note.textContent="Für diesen Song wird der direkte Player-Link noch ergänzt. Du kannst ihn bereits extern öffnen.";host.appendChild(note);return;}
   if(preferredMusic==="youtube"){
     if(!ytHost){ytHost=document.createElement("div");ytHost.id="persistentYoutube";const slot=document.createElement("div");slot.id="youtubeSlot";ytHost.appendChild(slot);host.appendChild(ytHost);}
@@ -515,7 +520,15 @@ function showEmbeddedMusic(){
       if(window.YT?.Player)init();else {window.onYouTubeIframeAPIReady=init;if(!document.getElementById("youtubeApi")){const script=document.createElement("script");script.id="youtubeApi";script.src="https://www.youtube.com/iframe_api";document.head.appendChild(script);}}
     }
   }else{
-    const frame=document.createElement("iframe");frame.title=playlist[current].join(" – ");frame.allow="autoplay; encrypted-media";frame.src="https://open.spotify.com/embed/track/"+id;frame.className="spotify-frame";host.appendChild(frame);
+    let wrapper=$("persistentSpotify");
+    if(!wrapper){wrapper=document.createElement("div");wrapper.id="persistentSpotify";const slot=document.createElement("div");slot.id="spotifySlot";wrapper.appendChild(slot);host.appendChild(wrapper);}
+    wrapper.hidden=false;
+    const active=()=>imageReady && preferredMusic==="spotify" && $("overlay").classList.contains("visible") && !!musicTracks[current+1]?.spotify;
+    const playCurrent=()=>{if(!spotifyController || !active())return;const uri="spotify:track:"+musicTracks[current+1].spotify;spotifyController.loadUri(uri);spotifyController.play();};
+    const init=()=>{if(!spotifyAPI || spotifyCreating || spotifyController || !active())return;spotifyCreating=true;spotifyAPI.createController($("spotifySlot"),{width:"100%",height:152,uri:"spotify:track:"+musicTracks[current+1].spotify},controller=>{spotifyController=controller;spotifyCreating=false;controller.addListener("ready",()=>{if(active())playCurrent();else controller.pause();});});};
+    if(spotifyController)playCurrent();
+    else if(spotifyAPI)init();
+    else {window.onSpotifyIframeApiReady=api=>{spotifyAPI=api;init();};if(!$("spotifyApi")){const script=document.createElement("script");script.id="spotifyApi";script.src="https://open.spotify.com/embed/iframe-api/v1";script.async=true;script.onerror=()=>{const note=$("musicPlaybackNote");if(note)note.textContent="Spotify konnte nicht geladen werden. Bitte extern öffnen.";};document.head.appendChild(script);}}
   }
   const note=document.createElement("p");note.id="musicPlaybackNote";note.textContent="Falls die Musik nicht automatisch startet, drücke Play im Player.";host.appendChild(note);
   revealSong();
