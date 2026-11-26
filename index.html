@@ -416,11 +416,14 @@ body.welcome .door { animation:welcome-in .85s ease both; animation-delay:calc(1
 #riddlePilot.solved + #pilotMusic #embeddedMusic {margin:8px auto}
 #riddlePilot.solved + #pilotMusic #embeddedMusic p {margin:6px 0}
 #pilotMusic.pilot-preparing {opacity:0;pointer-events:none}
-#pilotMusic.pilot-preparing #embeddedMusic:empty {display:block;min-height:180px}
-#pilotMusic.pilot-preparing #embeddedMusic {min-height:180px}
-#pilotStage.pilot-expanding {overflow:hidden;overflow-anchor:none}
 #pilotStage {display:contents}
-#pilotStage.pilot-expanding {display:block}
+#pilotStage.pilot-active {display:flow-root;overflow-anchor:none}
+#pilotStage.pilot-expanding {overflow:hidden}
+#pilotStage.pilot-active #embeddedMusic.pilot-spotify-slot {display:flow-root;min-height:190px}
+#pilotStage.pilot-active #embeddedMusic.pilot-spotify-slot p {line-height:18px;margin:6px 0}
+#pilotStage.pilot-active #embeddedMusic.pilot-spotify-slot iframe {height:152px}
+#pilotStage.pilot-expanding #pilotAnswer svg {animation:none;opacity:0}
+#pilotStage.pilot-expanding .pilot-details,#pilotStage.pilot-expanding .pilot-reaction {animation:none;opacity:0}
 #riddlePilot.celebrating #pilotAnswer svg {animation-delay:.2s}
 #riddlePilot.celebrating .pilot-reaction {animation-delay:1.4s}
 </style>
@@ -595,9 +598,9 @@ function stopEmbeddedMusic(){
   clearTimeout(musicTimer);musicTimer=null;
   $("embeddedMusic").replaceChildren();
 }
-function showEmbeddedMusic(pilotPreparing=false){
+function showEmbeddedMusic(){
   stopEmbeddedMusic();
-  if(!imageReady || !$("overlay").classList.contains("visible") || (pilotLocked()&&!pilotPreparing))return;
+  if(!imageReady || !$("overlay").classList.contains("visible") || pilotLocked())return;
   const service=current===0?(pilotChoosing?"":preferredMusic||"spotify"):preferredMusic;
   if(!service)return;
   const id=musicTracks[current+1]?.[service];
@@ -617,6 +620,8 @@ function updateMusicPreference() {
   const pilot=current===0;
   const service=pilot?(pilotChoosing?"":preferredMusic||"spotify"):preferredMusic;
   $("pilotListening").hidden=!pilot;
+  $("pilotStage").classList.toggle("pilot-active",pilot);
+  $("embeddedMusic").classList.toggle("pilot-spotify-slot",pilot&&service==="spotify");
   $("musicChoices").hidden=!!service;
   $("spotify").lastChild.textContent=pilot?" In Spotify öffnen":" Spotify";
   $("youtube").lastChild.textContent=pilot?" YouTube öffnen":" YouTube";
@@ -675,20 +680,19 @@ $("pilotReveal").addEventListener("click",()=>{
   if(!imageReady||!pilotLocked()||pilotAnimating)return;
   const mode=pilotMode();pilotSolved[mode]=true;
   try {localStorage.setItem("advent-riddle-2026-"+mode+"-01","1");}catch(e){}
-  const finish=(prepared=false)=>{pilotAnimating=false;$("pilotMusic").hidden=false;$("pilotMusic").classList.remove("pilot-preparing");$("nextDoor").disabled=!available(current+2);if(!prepared)showEmbeddedMusic();else revealSong();};
+  const finish=()=>{pilotAnimating=false;$("pilotMusic").hidden=false;$("pilotMusic").classList.remove("pilot-preparing");$("nextDoor").disabled=!available(current+2);showEmbeddedMusic();};
   if(window.matchMedia("(prefers-reduced-motion: reduce)").matches){renderPilot();finish();return;}
   pilotAnimating=true;
   $("riddlePilot").classList.add("departing");
   pilotLater(()=>{
     const stage=$("pilotStage");
-    stage.classList.add("pilot-expanding");
     const from=stage.getBoundingClientRect().height;
+    stage.classList.add("pilot-expanding");
     $("riddlePilot").classList.remove("departing");
     $("riddlePilot").classList.add("celebrating");
     pilotAnimating=false;renderPilot();pilotAnimating=true;
     $("pilotMusic").classList.add("pilot-preparing");
     $("pilotMusic").hidden=false;
-    showEmbeddedMusic(true);
     const to=stage.getBoundingClientRect().height;
     if(typeof stage.animate==="function"){
       pilotExpansion=stage.animate([{height:from+"px"},{height:to+"px"}],{duration:850,easing:"cubic-bezier(.22,.61,.36,1)",fill:"both"});
@@ -705,8 +709,8 @@ $("pilotReveal").addEventListener("click",()=>{
       $("pilotAnswer").appendChild(spark);
       spark.addEventListener("animationend",()=>spark.remove(),{once:true});
     }
-  },900);
-  pilotLater(()=>{$("pilotMusic").classList.add("pilot-arriving");finish(true);},1800);
+  },1450);
+  pilotLater(()=>{$("pilotMusic").classList.add("pilot-arriving");finish();},2500);
 });
 
 function available(day) {
