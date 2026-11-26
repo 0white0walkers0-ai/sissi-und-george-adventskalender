@@ -346,6 +346,9 @@ body.welcome .door { animation:welcome-in .85s ease both; animation-delay:calc(1
 
 .panel .scene .living-frame { inset:0; transform:translateZ(90px); border:0; border-radius:15px; animation:inward-frame-glow 3.8s 2.8s ease-in-out both; }
 @keyframes inward-frame-glow { 0%,100% { box-shadow:inset 0 0 0 0 transparent; } 35%,65% { box-shadow:inset 0 0 12px 3px #ffe8a3bb,inset 0 0 35px 10px #ffc85c66,inset 0 0 65px 18px #eab64e22; } }
+
+.overlay { touch-action:pan-y pinch-zoom; }
+@media(pointer:coarse) { .scene { touch-action:pan-y pinch-zoom; } }
 </style>
 </head>
 <body>
@@ -676,6 +679,27 @@ function toggleMode() {
   closeDoor();
   renderCalendar();
 }
+
+// Horizontal touch gestures, without interfering with vertical scrolling.
+let swipeStart=null;
+const swipeOverlay=$("overlay");
+swipeOverlay.addEventListener("touchstart",e=>{
+  swipeStart=null;
+  if(e.touches.length!==1 || e.target.closest("button,a,input,select,textarea"))return;
+  const t=e.touches[0];
+  swipeStart={x:t.clientX,y:t.clientY,time:performance.now()};
+},{passive:true});
+swipeOverlay.addEventListener("touchmove",e=>{
+  if(e.touches.length!==1)swipeStart=null;
+},{passive:true});
+swipeOverlay.addEventListener("touchcancel",()=>{swipeStart=null;},{passive:true});
+swipeOverlay.addEventListener("touchend",e=>{
+  const start=swipeStart;swipeStart=null;
+  if(!start || e.changedTouches.length!==1 || !swipeOverlay.classList.contains("visible"))return;
+  const t=e.changedTouches[0],dx=t.clientX-start.x,dy=t.clientY-start.y;
+  if(performance.now()-start.time>1000 || Math.abs(dx)<65 || Math.abs(dx)<1.6*Math.abs(dy))return;
+  navigate(dx<0?1:-1);
+},{passive:true});
 
 document.addEventListener("keydown",e => {
   if (!$("overlay").classList.contains("visible")) return;
