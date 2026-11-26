@@ -357,6 +357,13 @@ body.welcome .door { animation:welcome-in .85s ease both; animation-delay:calc(1
 #embeddedMusic iframe{display:block;width:100%;border:0;border-radius:12px}
 .spotify-frame{height:152px}
 .youtube-frame{aspect-ratio:16/9;min-height:200px}
+/* Only the Christmas finale letter. */
+.panel.finale .message { font:400 clamp(16px,2.5vw,19px)/1.7 Lora,Georgia,serif; max-width:32em; overflow-wrap:break-word; }
+.panel.finale .message .letter-paragraph { display:block; margin:0 0 1em; }
+.panel.finale .message .letter-paragraph:first-child { font:600 italic clamp(28px,4vw,36px)/1.25 "Cormorant Garamond",Georgia,serif; color:var(--gold); }
+.panel.finale .message .letter-paragraph:nth-child(6),.panel.finale .message .letter-paragraph:last-of-type { font:600 italic clamp(22px,3vw,27px)/1.4 "Cormorant Garamond",Georgia,serif; }
+.panel.finale .message .letter-paragraph:nth-child(7) { font:600 clamp(26px,4vw,32px)/1.3 "Cormorant Garamond",Georgia,serif; color:var(--gold); }
+.panel.finale .message-heart { display:block; width:2em; height:2em; margin:.6em auto 0; }
 </style>
 </head>
 <body>
@@ -455,30 +462,30 @@ const playlist = [
 ];
 
 const scenes = [
-  ["💍","Ein kleines Ja kann ganz großes Glück bedeuten."],
-  ["💚","Du bist wunderbar, mit allem, was dich ausmacht."],
-  ["🛷","Manche Augenblicke fühlen sich einfach perfekt an."],
-  ["🎄","Du musst nichts verändern, um besonders zu sein."],
-  ["🏙️","Manchmal findet das Herz seinen eigenen Weg."],
-  ["🦢","Zusammen ist selbst ein kalter Tag voller Wärme."],
-  ["🍪","Ein bisschen Chaos und ganz viel Herz."],
-  ["🌊","Für dich würde ich sogar dem Winterwind trotzen."],
-  ["☃️","Mit dir wird jeder Wintertag ein Sonnentag."],
-  ["🎬","Ich bin da, wenn du mich brauchst."],
-  ["🎤","Heute gehört die Bühne uns!"],
-  ["🌿","Ein Platz in meinem Herzen ist immer für dich frei."],
-  ["🎢","Mit dir macht sogar das größte Durcheinander Spaß."],
-  ["🚆","Auf zu neuen Abenteuern – bloß nicht den Zug verpassen!"],
-  ["✈️","Manche Begegnungen rauben einem den Atem."],
-  ["🎭","Ein Blick sagt manchmal mehr als tausend Worte."],
-  ["🕯️","Das Schönste an diesem Moment bist du."],
-  ["🌍","Jedes Lied erzählt ein kleines Stück unserer Geschichte."],
-  ["🦁","Unter dem Sternenhimmel zählt nur dieser Augenblick."],
-  ["💃","Ein Moment, den wir niemals vergessen."],
-  ["🚌","Manchmal braucht es nur ein bisschen Liebe."],
-  ["🎡","194 Länder – aber mein Lieblingsplatz ist bei dir."],
-  ["🚢","Manche Gefühle bleiben für immer."],
-  ["🎁","Du bist toll. Genau so, wie du bist. ❤️"]
+  ["💍","Mein Herz sagt Ja zu dir – heute, morgen und immer wieder."],
+  ["💚","Ich liebe dich mit allem, was mich ausmacht, und für alles, was dich ausmacht."],
+  ["🛷","Wenn wir zusammen lachen und die Welt um uns herum vergessen, ist für mich alles perfekt."],
+  ["🎄","Es sind all die kleinen Dinge, die dich zu etwas ganz Besonderem für mich machen."],
+  ["🏙️","Ich habe mir nicht ausgesucht, mich in dich zu verlieben – mein Herz war einfach schneller als mein Verstand."],
+  ["🦢","Zusammen mit dir ist jeder Tag voller Wärme."],
+  ["🍪","Wenn unsere Herzen verschmelzen, wird aus einem Ich und einem Du ein Wir."],
+  ["🌊","Mit dir möchte ich in eiskalte Wellen springen und jedes Abenteuer des Lebens teilen."],
+  ["☃️","Du bist mein Halt, der mich sanft übers Glatteis führt."],
+  ["🎬","Ich möchte für dich der Mensch sein, bei dem du dich fallen lassen kannst, ohne Angst haben zu müssen, zu fallen."],
+  ["🎤","Mit dir möchte ich auch noch im hohen Alter völlig verrückt durchs Wohnzimmer tanzen."],
+  ["🌿","Du hast nicht nur einen Platz in meinem Herzen gefunden – du bist ein Teil davon geworden."],
+  ["🎢","Wenn das Leben eine Achterbahn ist, möchte ich mit dir in der ersten Reihe sitzen."],
+  ["🚆","Mit dir möchte ich aufbrechen, ohne immer zu wissen, wohin – und ankommen, ohne dass unsere Reise jemals endet."],
+  ["✈️","Ich wünsche mir, dass du mir auch in vielen Jahren noch mit einem einzigen Blick den Atem raubst."],
+  ["🎭","Schau mal herein – in meine Gedanken, meine Träume und meine kleine verrückte Welt. Ich möchte all das mit dir teilen."],
+  ["🕯️","Du bist der Mensch, bei dem ich manchmal innehalte, dich anschaue und einfach nur denke: Was habe ich für ein Glück."],
+  ["🌍","Manche Lieder erinnern mich an besondere Momente – die schönsten davon erinnern mich an dich."],
+  ["🦁","Es gibt Augenblicke, in denen unsere Herzen miteinander sprechen, während unsere Lippen schweigen."],
+  ["💃","Die schönsten Momente unseres Lebens sind vielleicht noch gar nicht passiert – und genau darauf freue ich mich mit dir."],
+  ["🚌","Ich möchte mit dir ein Leben führen, das nicht reich an Dingen, sondern reich an Liebe und Erinnerungen ist."],
+  ["🎡","194 Länder und unzählige wunderschöne Orte – doch mein Zuhause hat keine Adresse, sondern deinen Namen."],
+  ["🚢","Auch wenn die Zeit ihre Spuren an uns hinterlässt, wünsche ich mir, dass unsere Herzen niemals aufhören, füreinander zu schlagen."],
+  ["🎁","Für dich, Waja.\n\n24 Türchen, 24 Melodien und 24 kleine Liebeserklärungen – und doch reichen sie nicht aus, um dir zu sagen, was du mir bedeutest.\n\nMit dir möchte ich lachen, tanzen, träumen, verrückt sein, die Welt entdecken und gemeinsam alt werden.\n\nIch möchte mit dir Erinnerungen sammeln, die uns noch in vielen Jahren zum Lächeln bringen.\n\nDenn das schönste Geschenk ist für mich nicht das, was unter dem Weihnachtsbaum liegt, sondern der Mensch, mit dem ich davor sitzen darf.\n\nDu bist toll. Genau so, wie du bist.\n\nIch liebe dich.\n\nFrohe Weihnachten, mein Herz."]
 ];
 
 let preferredMusic = "";
@@ -590,6 +597,16 @@ function openDoor(i) {
 
   $("doorTitle").textContent = i===23 ? "Unser Weihnachtsfinale · 24" : "Türchen "+(i+1);
   $("message").textContent = scenes[i][1].replace(/❤️/g,"").trim();
+  if(i===23){
+    const letter=$("message");
+    const paragraphs=letter.textContent.split("\n\n");
+    letter.replaceChildren(...paragraphs.map(text=>{
+      const span=document.createElement("span");
+      span.className="letter-paragraph";
+      span.textContent=text;
+      return span;
+    }));
+  }
   if(i===23) $("message").insertAdjacentHTML("beforeend","<svg class=\"message-heart\" viewBox=\"0 0 40 40\" aria-label=\"Herz\"><defs><linearGradient id=\"heartGold\" x2=\"0.8\" y2=\"1\"><stop stop-color=\"#fff4c0\"/><stop offset=\".45\" stop-color=\"#e8b44e\"/><stop offset=\"1\" stop-color=\"#98601f\"/></linearGradient></defs><path d=\"M20 35C15 30 3 23 3 13C3 3 15 2 20 11C25 2 37 3 37 13C37 23 25 30 20 35Z\" fill=\"url(#heartGold)\" stroke=\"#ffe7a0\"/><path d=\"M7 13Q8 6 15 8\" fill=\"none\" stroke=\"#fff8dc\" stroke-width=\"2\" stroke-linecap=\"round\"/></svg>");
 
   const scene = $("scene");
