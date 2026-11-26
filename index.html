@@ -449,6 +449,11 @@ body.pilot-snow-paused .snowflake {animation-play-state:paused!important}
   #riddlePilot.mobile-celebrating .spark {animation-duration:2.8s}
 }
 @keyframes pilot-mobile-fade {from{opacity:0}to{opacity:1}}
+.riddle-invitation {max-width:38em;margin:22px auto;padding:16px 18px;border:1px solid #dfb97966;border-radius:12px;color:#f4e3bf}
+.riddle-invitation h2 {font:600 28px "Cormorant Garamond",Georgia,serif;color:var(--gold);margin:0 0 10px}
+.riddle-invitation p {margin:8px 0}
+#pilotAnswer.pilot-finale svg {width:124px;max-width:55%}
+#pilotAnswer.pilot-finale .pilot-reaction {font-size:26px}
 </style>
 </head>
 <body>
@@ -461,6 +466,7 @@ body.pilot-snow-paused .snowflake {animation-play-state:paused!important}
   <h2 class="hero-title">Unsere 24 schönsten Momente</h2>
   <p class="hero-tagline">24 Erinnerungen. 24 Melodien. Eine ganz besondere Geschichte.</p>
   <p class="hero-intro">Jedes Türchen erzählt ein kleines Stück von uns und erinnert daran, wie wertvoll unsere gemeinsamen Momente sind.</p>
+  <section class="riddle-invitation"><h2>Entdeckst du unsere Melodien?</h2><p>Hinter jedem Türchen versteckt sich nicht nur eine kleine Liebeserklärung, sondern auch ein Song. Unsere Bilder und meine Botschaften verraten dir, welcher es sein könnte.</p><p><em>Schau genau hin, lies zwischen den Zeilen und hör auf dein Herz.</em></p></section>
 </header>
 
 <div class="controls">
@@ -624,7 +630,7 @@ function stopEmbeddedMusic(){
 function showEmbeddedMusic(preparingMobile=false){
   stopEmbeddedMusic();
   if(!imageReady || !$("overlay").classList.contains("visible") || (pilotLocked()&&!preparingMobile))return;
-  const service=current===0?(pilotChoosing?"":preferredMusic||"spotify"):preferredMusic;
+  const service=pilotChoosing?"":preferredMusic||"spotify";
   if(!service)return;
   const id=musicTracks[current+1]?.[service];
   if(!id){$("embeddedMusic").textContent="Für diesen Song wird der direkte Player-Link noch ergänzt. Du kannst ihn bereits extern öffnen.";return;}
@@ -636,11 +642,11 @@ function showEmbeddedMusic(preparingMobile=false){
   frame.src=service==="spotify"?"https://open.spotify.com/embed/track/"+id+"?utm_source=generator":"https://www.youtube-nocookie.com/embed/"+id+"?autoplay=1&playsinline=1&rel=0";
   frame.className=service==="spotify"?"spotify-frame":"youtube-frame";
   $("embeddedMusic").appendChild(frame);
-  const note=document.createElement("p");note.textContent=current===0?"Falls nötig, drücke Play im Player.":"Falls die Musik nicht automatisch startet, drücke Play im Player.";$("embeddedMusic").appendChild(note);
+  const note=document.createElement("p");note.textContent="Falls nötig, drücke Play im Player.";$("embeddedMusic").appendChild(note);
   revealSong();
 }
 function updateMusicPreference() {
-  const pilot=current===0;
+  const pilot=true;
   const service=pilot?(pilotChoosing?"":preferredMusic||"spotify"):preferredMusic;
   $("pilotListening").hidden=!pilot;
   $("pilotStage").classList.toggle("pilot-active",pilot);
@@ -664,22 +670,142 @@ let revealed = new Set();
 const $ = id => document.getElementById(id);
 
 const pilotHints = [
-  "Manchmal reicht ein einziges Ja – doch in unserer heutigen Melodie reicht einmal offenbar nicht aus.",
-  "Ein englisches Eheversprechen wird im Titel dieses Songs aus dem Jahr 1975 gleich fünfmal wiederholt.",
-  "Die gesuchte Melodie stammt von Agnetha, Björn, Benny und Anni-Frid – besser bekannt als ABBA."
+  [
+    "Manchmal reicht ein einziges Ja – doch in unserer heutigen Melodie reicht einmal offenbar nicht aus.",
+    "Ein englisches Eheversprechen wird im Titel dieses Songs aus dem Jahr 1975 gleich fünfmal wiederholt.",
+    "Die gesuchte Melodie stammt von Agnetha, Björn, Benny und Anni-Frid – besser bekannt als ABBA."
+  ],
+  [
+    "Wer sein Herz verschenkt, sollte keine Hälfte für sich behalten.",
+    "Diese gefühlvolle Klavierballade aus dem Jahr 2013 ist eine Liebeserklärung an die spätere Ehefrau des Sängers.",
+    "Der Sänger dieser Liebeserklärung trägt einen geradezu legendären Künstlernamen: John Legend."
+  ],
+  [
+    "Manche Augenblicke sind so schön, dass man an ihnen nichts mehr verbessern könnte.",
+    "Das Musikvideo dieser romantischen Ballade aus dem Jahr 2017 erzählt eine Liebesgeschichte inmitten verschneiter Berge.",
+    "Die gesuchte Melodie stammt von einem rothaarigen britischen Sänger, der besonders für seine gefühlvollen Songs und sein Gitarrenspiel bekannt ist: Ed Sheeran."
+  ],
+  [
+    "Wenn ich mir die perfekte Version von dir wünschen dürfte, würde ich mir einfach dich wünschen.",
+    "Im Musikvideo dieses Welthits aus dem Jahr 2010 entstehen romantische Bilder aus dem Magnetband einer Musikkassette.",
+    "Für diese Melodie müssen wir musikalisch zu einem anderen Planeten reisen – zu Bruno Mars."
+  ],
+  [
+    "Es gibt eine Art des Fallens, gegen die selbst der stärkste Wille machtlos ist.",
+    "Diese romantische Ballade wurde 1961 für einen Musikfilm geschrieben, der uns auf die wunderschönen Inseln von Hawaii entführt.",
+    "Ein König ohne Krone, aber mit legendärem Hüftschwung – der King of Rock ’n’ Roll: Elvis Presley."
+  ],
+  [
+    "Selbst wenn die ganze Welt ins Wanken gerät, gibt es einen Platz, an dem ich mich sicher fühle – an deiner Seite.",
+    "Diese unvergessliche Soul-Melodie aus dem Jahr 1961 wurde 25 Jahre später durch einen gleichnamigen Film erneut weltberühmt.",
+    "Hinter unserem heutigen Türchen verbirgt sich erneut ein musikalischer König – diesmal allerdings Ben E. King."
+  ],
+  [
+    "Zwei Herzen, ein gemeinsamer Rhythmus – und plötzlich bekommt selbst unser Herzklopfen einen tanzbaren Beat.",
+    "Für diese deutschsprachige Melodie reisen wir zurück ins Jahr 1995, in die bunte Welt von Happy Hardcore, Techno und Neonfarben.",
+    "Mitten im Dezember lassen wir musikalisch eine kleine Blume erblühen – Jasmin Wagner, besser bekannt als Blümchen."
+  ],
+  [
+    "Ob ich ins eiskalte Wasser springe oder Berge versetze – der Grund dafür bist immer du.",
+    "Diese Rockballade aus dem Jahr 1991 führt uns in den Sherwood Forest, zu einem berühmten Bogenschützen und seiner großen Liebe.",
+    "Die gesuchte Melodie stammt von einem kanadischen Rockstar mit unverwechselbarer rauchiger Stimme – Bryan Adams."
+  ],
+  [
+    "Du bist der Mensch, der selbst an den kältesten Tagen die Sonne in meinem Herzen scheinen lässt.",
+    "Dieser Soul-Klassiker wurde 1964 veröffentlicht und war der erste Nummer-eins-Hit seiner fünfköpfigen Gesangsgruppe in den amerikanischen Popcharts.",
+    "Unsere heutige Melodie stammt aus der legendären Motown-Ära und wird von The Temptations gesungen."
+  ],
+  [
+    "Manche Versprechen kennen kein Ablaufdatum – auch dann nicht, wenn das Leben neue Wege für uns bereithält.",
+    "Diese gefühlvolle Ballade wurde ursprünglich 1974 von Dolly Parton veröffentlicht und eroberte 1992 als Filmmusik erneut die Herzen der Menschen.",
+    "Eine der größten Stimmen der Musikgeschichte sang diese Liebeserklärung im Film Bodyguard: Whitney Houston."
+  ],
+  [
+    "Auch wenn wir irgendwann graue Haare haben, sollst du für mich noch immer die Königin der Tanzfläche sein.",
+    "Dieser Disco-Klassiker aus dem Jahr 1976 wurde sogar am Vorabend der Hochzeit des schwedischen Königspaares aufgeführt.",
+    "Vier schwedische Musiklegenden bringen uns heute zum Tanzen: Agnetha, Björn, Benny und Anni-Frid – ABBA."
+  ],
+  [
+    "Ganz gleich, wohin uns das Leben führt – es gibt einen Ort in mir, an dem du für immer zu Hause sein wirst.",
+    "Diese Ballade aus dem Jahr 1999 entstammt einem Disney-Film über einen Jungen, der im Dschungel aufwächst, und wurde mit einem Oscar ausgezeichnet.",
+    "Der gesuchte Sänger war einst Schlagzeuger und Frontmann der Band Genesis – Phil Collins."
+  ],
+  [
+    "Mit dir darf es im Leben ruhig mal drunter und drüber gehen – Hauptsache, wir steigen am Ende mit einem Lächeln aus.",
+    "Diesmal suchen wir keine romantische Ballade, sondern einen deutschsprachigen Stimmungssong, dessen Titel das Gegenteil von schlechter Stimmung verspricht.",
+    "Auch mitten in einer Großstadt kann man Engeln begegnen – unsere heutigen musikalischen Begleiter sind die GroßstadtEngel."
+  ],
+  [
+    "Wenn wir gemeinsam unterwegs sind, wünsche ich mir manchmal, dass das Leben keine Bremse hätte.",
+    "Dieser energiegeladene Rocksong stammt vom Album „Jazz“ aus dem Jahr 1978 und wurde 1979 als Single veröffentlicht.",
+    "Ein musikalischer Ausflug mit königlicher Begleitung und der unverwechselbaren Stimme von Freddie Mercury – Queen."
+  ],
+  [
+    "Manchmal genügt ein einziger Blick von dir, und für einen kleinen Augenblick vergesse ich sogar zu atmen.",
+    "Diese Ballade aus dem Jahr 1986 begleitet die Liebesgeschichte eines Kampfpiloten und wurde mit einem Oscar ausgezeichnet.",
+    "Für unsere heutige Melodie müssen wir musikalisch in die deutsche Hauptstadt reisen – zumindest dem Namen der amerikanischen Band nach: Berlin."
+  ],
+  [
+    "Meine Tür steht für dich immer offen – aber noch viel lieber öffne ich dir die Tür zu meiner kleinen Welt.",
+    "Unsere heutige Melodie ist ein deutschsprachiges Duett, das auf dem englischsprachigen Klassiker „Stumblin’ In“ von Chris Norman und Suzi Quatro basiert.",
+    "Zwei der bekanntesten Gesichter des deutschen Schlagers singen heute gemeinsam für uns: Helene Fischer und Florian Silbereisen."
+  ],
+  [
+    "Wenn ich all die schönen Geschenke aufzählen müsste, die mir das Leben gemacht hat, würde eines ganz oben auf meiner Liste stehen – du.",
+    "Diese deutschsprachige Liebesballade aus dem Jahr 2006 stammt vom Album „Laut gedacht“ und erreichte Platz eins der deutschen Singlecharts.",
+    "Für unsere heutige Melodie schauen wir hinauf zum nächtlichen Himmel – zu einem silbernen Mond. Gesungen wird sie von Stefanie Kloß und ihrer Band Silbermond."
+  ],
+  [
+    "Wenn unser gemeinsames Leben einen Soundtrack hätte, würde jede Melodie darin ihre ganz eigene Geschichte erzählen.",
+    "Dieser deutschsprachige Song aus dem Jahr 2013 erzählt die Lebensgeschichte seines Sängers mithilfe zahlreicher Anspielungen auf bekannte Musiktitel.",
+    "Der gesuchte Sänger war gemeinsam mit Annette Humpe Teil des erfolgreichen Duos Ich + Ich – Adel Tawil."
+  ],
+  [
+    "Wenn die Sonne untergeht und die Welt langsam zur Ruhe kommt, gibt es ein Gefühl, für das wir keine Worte brauchen.",
+    "Diese romantische Ballade aus dem Jahr 1994 entführt uns in die afrikanische Savanne und wurde als Filmsong mit einem Oscar ausgezeichnet.",
+    "Ein britischer Musiker mit extravaganten Brillen, legendären Bühnenoutfits und einer großen Liebe zum Klavier – Sir Elton John."
+  ],
+  [
+    "Wenn ich irgendwann auf unser gemeinsames Leben zurückblicke, möchte ich sagen können: Mit dir hatte ich die schönste Zeit meines Lebens.",
+    "Dieses Duett aus dem Jahr 1987 begleitet eine der berühmtesten Tanzszenen der Filmgeschichte – einschließlich einer legendären Hebefigur.",
+    "Zwei amerikanische Stimmen vereinen sich in unserer heutigen Melodie: Bill Medley, bekannt durch die Righteous Brothers, und Jennifer Warnes."
+  ],
+  [
+    "Wenn wir alles Materielle aus unserem Leben streichen würden, bliebe immer noch das Wichtigste übrig – das, was uns miteinander verbindet.",
+    "Diese musikalische Friedens- und Liebesbotschaft wurde 1967 im Rahmen einer internationalen Live-Fernsehübertragung einem weltweiten Publikum präsentiert.",
+    "Vier legendäre Musiker aus Liverpool verbreiteten diese Botschaft: John, Paul, George und Ringo – The Beatles."
+  ],
+  [
+    "Selbst wenn ich jeden Winkel dieser Erde entdecken könnte, gäbe es für mich nur einen Ort, an den mein Herz immer wieder zurückkehren würde.",
+    "Dieser deutschsprachige Popsong wurde 2019 als Single aus dem Album „Liebe“ veröffentlicht. In seinem Titel versteckt sich eine dreistellige Zahl.",
+    "Schwarze Brille, Baseballcap und eine unverwechselbare Stimme – unsere heutige musikalische Weltreise begleitet Mark Forster."
+  ],
+  [
+    "Was auch immer das Leben für uns bereithält – ich wünsche mir, dass unsere Herzen niemals aufhören, im selben Takt zu schlagen.",
+    "Diese weltberühmte Ballade aus dem Jahr 1997 erzählt von einer Liebe, die selbst den Untergang eines legendären Ozeanriesen überdauert. Sie wurde mit einem Oscar ausgezeichnet.",
+    "Eine außergewöhnliche Stimme aus Kanada begleitet uns auf unserer heutigen musikalischen Reise – Céline Dion."
+  ],
+  [
+    "Wenn ich dir heute nur eine einzige Sache mit auf den Weg geben dürfte, dann wäre es die Gewissheit, dass du genauso wunderbar bist, wie du bist.",
+    "Unsere letzte Melodie ist ein deutschsprachiger Popsong, dessen Titel aus nur drei kleinen Worten besteht, die wir unseren Lieblingsmenschen viel öfter sagen sollten.",
+    "Zum Abschluss unserer musikalischen Reise begleitet uns ein deutscher Sänger, dessen Künstlername aus fünf Buchstaben besteht: ENKAY."
+  ]
 ];
-const pilotSolved = {preview:false,christmas:false};
+const pilotSolved = {preview:new Set(),christmas:new Set()};
+const pilotKey=(mode,i)=>"advent-riddle-2026-"+mode+"-"+String(i+1).padStart(2,"0");
 for(const mode of Object.keys(pilotSolved)){
-  try { pilotSolved[mode]=localStorage.getItem("advent-riddle-2026-"+mode+"-01")==="1"; } catch(e){}
+  for(let i=0;i<24;i++){
+    try {if(localStorage.getItem(pilotKey(mode,i))==="1")pilotSolved[mode].add(i);}catch(e){}
+  }
 }
 const pilotMode=()=>preview?"preview":"christmas";
-const pilotLocked=()=>current===0&&(!pilotSolved[pilotMode()]||pilotAnimating);
+const pilotLocked=()=>!pilotSolved[pilotMode()].has(current)||pilotAnimating;
 let pilotHintCount=0, pilotAnimating=false, pilotTimers=[], pilotChoosing=false;
 let pilotExpansion=null, pilotNavigationMotion=null;
 function cancelPilotAnimation(){pilotTimers.forEach(clearTimeout);pilotTimers=[];pilotAnimating=false;if(pilotExpansion){pilotExpansion.cancel();pilotExpansion=null;}if(pilotNavigationMotion){pilotNavigationMotion.cancel();pilotNavigationMotion=null;}document.body.classList.remove("pilot-snow-paused");$("overlay").classList.remove("pilot-mobile-stable");$("riddlePilot").classList.remove("mobile-celebrating");$("pilotMusic").classList.remove("mobile-arriving");$("pilotStage").classList.remove("pilot-expanding");$("riddlePilot").classList.remove("departing","celebrating");$("pilotMusic").classList.remove("pilot-arriving","pilot-preparing");}
 function pilotLater(fn,ms){pilotTimers.push(setTimeout(fn,ms));}
 function renderPilot(){
-  const active=current===0, solved=active&&!pilotLocked();
+  const active=true, solved=!pilotLocked();
   $("riddlePilot").hidden=!active||!imageReady;
   $("riddlePilot").classList.toggle("solved",solved);
   $("pilotQuestion").hidden=solved;
@@ -689,21 +815,31 @@ function renderPilot(){
   $("pilotReveal").hidden=solved;
   $("pilotAnswer").hidden=!solved;
   $("pilotHint").textContent=["Ein kleiner Hinweis","Noch ein Hinweis","Ein letzter Hinweis"][pilotHintCount]||"";
-  $("pilotAnswer").innerHTML=solved?'<div class="pilot-ornament" aria-hidden="true">✧ ── ♡ ── ✧</div><svg viewBox="0 0 40 40" aria-hidden="true"><defs><linearGradient id="pilotGold" x1=".15" y1="0" x2=".85" y2="1"><stop stop-color="#fff8d8"/><stop offset=".23" stop-color="#f9da8d"/><stop offset=".5" stop-color="#d99c36"/><stop offset=".72" stop-color="#f5cb6b"/><stop offset="1" stop-color="#80501c"/></linearGradient></defs><path d="M20 35C15 30 3 23 3 13C3 3 15 2 20 11C25 2 37 3 37 13C37 23 25 30 20 35Z" fill="#704b20" transform="translate(0 1.3)"/><path d="M20 35C15 30 3 23 3 13C3 3 15 2 20 11C25 2 37 3 37 13C37 23 25 30 20 35Z" fill="url(#pilotGold)" stroke="#ffe7a0" stroke-width=".55"/><path d="M6 13Q7 5 15 8" stroke="#fff9dc" stroke-width="1.5" stroke-linecap="round" fill="none" opacity=".8"/></svg><div class="pilot-details"><p class="pilot-caption">Unsere heutige Melodie</p><p class="pilot-song">I Do, I Do, I Do, I Do, I Do</p><p class="pilot-artist">ABBA</p></div><p class="pilot-reaction">Na, hast du es erraten? ♡</p>':"";
+  $("pilotAnswer").innerHTML=solved?'<div class="pilot-ornament" aria-hidden="true">✧ ── ♡ ── ✧</div><svg viewBox="0 0 40 40" aria-hidden="true"><defs><linearGradient id="pilotGold" x1=".15" y1="0" x2=".85" y2="1"><stop stop-color="#fff8d8"/><stop offset=".23" stop-color="#f9da8d"/><stop offset=".5" stop-color="#d99c36"/><stop offset=".72" stop-color="#f5cb6b"/><stop offset="1" stop-color="#80501c"/></linearGradient></defs><path d="M20 35C15 30 3 23 3 13C3 3 15 2 20 11C25 2 37 3 37 13C37 23 25 30 20 35Z" fill="#704b20" transform="translate(0 1.3)"/><path d="M20 35C15 30 3 23 3 13C3 3 15 2 20 11C25 2 37 3 37 13C37 23 25 30 20 35Z" fill="url(#pilotGold)" stroke="#ffe7a0" stroke-width=".55"/><path d="M6 13Q7 5 15 8" stroke="#fff9dc" stroke-width="1.5" stroke-linecap="round" fill="none" opacity=".8"/></svg><div class="pilot-details"><p class="pilot-caption">Unsere heutige Melodie</p><p class="pilot-song"></p><p class="pilot-artist"></p></div><p class="pilot-reaction">Na, hast du es erraten? ♡</p>':"";
+  if(solved){
+    const answer=$("pilotAnswer");
+    answer.classList.toggle("pilot-finale",current===23);
+    answer.querySelector(".pilot-song").textContent=playlist[current][1];
+    answer.querySelector(".pilot-artist").textContent=playlist[current][0];
+    if(current===23){
+      answer.querySelector(".pilot-caption").textContent="Unsere letzte Melodie";
+      answer.querySelector(".pilot-reaction").textContent="Frohe Weihnachten, mein Herz.";
+    }
+  }
 }
 $("pilotHint").addEventListener("click",()=>{
   if(!imageReady||!pilotLocked()||pilotHintCount>=3)return;
   const p=document.createElement("p");
-  p.textContent="Hinweis "+(pilotHintCount+1)+": "+pilotHints[pilotHintCount++];
+  p.textContent="Hinweis "+(pilotHintCount+1)+": "+pilotHints[current][pilotHintCount++];
   $("pilotHints").appendChild(p);
   $("pilotHint").hidden=pilotHintCount>=3;
   $("pilotHint").textContent=["Ein kleiner Hinweis","Noch ein Hinweis","Ein letzter Hinweis"][pilotHintCount]||"";
 });
 $("pilotReveal").addEventListener("click",()=>{
   if(!imageReady||!pilotLocked()||pilotAnimating)return;
-  const mode=pilotMode();pilotSolved[mode]=true;
-  try {localStorage.setItem("advent-riddle-2026-"+mode+"-01","1");}catch(e){}
-  const finish=()=>{document.body.classList.remove("pilot-snow-paused");pilotAnimating=false;$("pilotMusic").hidden=false;$("pilotMusic").classList.remove("pilot-preparing");$("nextDoor").disabled=!available(current+2);showEmbeddedMusic();};
+  const mode=pilotMode();pilotSolved[mode].add(current);
+  try {localStorage.setItem(pilotKey(mode,current),"1");}catch(e){}
+  const finish=()=>{document.body.classList.remove("pilot-snow-paused");pilotAnimating=false;$("pilotMusic").hidden=false;$("pilotMusic").classList.remove("pilot-preparing");$("nextDoor").disabled=current!==23&&!available(current+2);showEmbeddedMusic();};
   if(window.matchMedia("(prefers-reduced-motion: reduce)").matches){renderPilot();finish();return;}
   const mobile=window.matchMedia("(max-width:768px), (pointer:coarse) and (max-width:1024px)").matches;
   const overlay=$("overlay");
@@ -754,7 +890,7 @@ $("pilotReveal").addEventListener("click",()=>{
     }else stage.classList.remove("pilot-expanding");
   },mobile?220:400);
   pilotLater(()=>{
-    for(let k=0;k<24;k++){
+    for(let k=0;k<(current===23?42:24);k++){
       const spark=document.createElement("span");spark.className="spark";spark.setAttribute("aria-hidden","true");spark.textContent=k%3?"·":"✦";
       const angle=k*2.399,distance=55+k%9*11;
       spark.style.setProperty("--dx",Math.cos(angle)*distance+"px");
@@ -762,6 +898,12 @@ $("pilotReveal").addEventListener("click",()=>{
       spark.style.top="70px";spark.style.animationDelay=(k%6*.035)+"s";
       $("pilotAnswer").appendChild(spark);
       spark.addEventListener("animationend",()=>spark.remove(),{once:true});
+    }
+    if(current===23){
+      const rain=document.createElement("div");rain.className="finale-rain";rain.setAttribute("aria-hidden","true");
+      for(let k=0;k<24;k++){const star=document.createElement("span");star.textContent="✦";star.style.left=(k*37%100)+"%";star.style.animationDelay=(k*.08)+"s";rain.appendChild(star);}
+      $("pilotAnswer").appendChild(rain);
+      pilotLater(()=>rain.remove(),6000);
     }
   },mobile?800:1150);
   if(mobile){
@@ -778,7 +920,7 @@ $("pilotReveal").addEventListener("click",()=>{
       $("pilotMusic").classList.remove("pilot-preparing");
       $("pilotMusic").classList.add("mobile-arriving");
       preserveMobileAnchor();
-      $("nextDoor").disabled=!available(current+2);
+      $("nextDoor").disabled=current!==23&&!available(current+2);
       revealSong();
     },2000);
   }else pilotLater(()=>{$("pilotMusic").classList.add("pilot-arriving");finish();},2000);
@@ -952,7 +1094,7 @@ function openDoor(i) {
   musicTimer=setTimeout(ready,reduced?0:2450);
   document.body.style.overflow = "hidden";
   updateMusicPreference();
-  if (preferredMusic && i!==0) {
+  if (preferredMusic && !pilotLocked() && !$("pilotMusic").hidden) {
     const link = $(preferredMusic);
     link.focus({preventScroll:true});
   }
@@ -970,7 +1112,7 @@ document.querySelectorAll("#musicChoices button").forEach(button=>button.addEven
 });
 $("forgetMusic").addEventListener("click", () => {
   stopEmbeddedMusic();
-  if(current===0)pilotChoosing=true;
+  pilotChoosing=true;
   preferredMusic = "";
   try { localStorage.removeItem("preferredMusic"); } catch(e) {}
   updateMusicPreference();
