@@ -193,6 +193,27 @@ footer {
 @keyframes pop-scene { 0%,15% { transform:translateZ(-160px) scale(.78); filter:brightness(.45); } 60% { transform:translateZ(0) scale(.98); filter:brightness(1); } 85% { transform:translateZ(45px) scale(1.12); } 100% { transform:translateZ(25px) scale(1.10); filter:brightness(1); } }
 @media(max-width:600px) { .scene { margin:28px 8px 36px; } .scene img { max-width:92%; } }
 @media(prefers-reduced-motion:reduce) { .scene .door-cover { display:none; } .scene img { animation:none !important; } }
+
+.scene { background:radial-gradient(ellipse at 50% 0%,#e7c77977,transparent 70%),linear-gradient(145deg,#54766d,#253d55); }
+.scene .door-cover { z-index:0; animation:curtain-layer 1.65s step-end forwards; }
+@keyframes curtain-layer { from { z-index:3; } to { z-index:0; } }
+@keyframes curtain-left { 0%,12% { transform:translateZ(18px) scaleX(1); } 100% { transform:translateX(-5%) rotateY(-12deg) scaleX(.18); opacity:1; } }
+@keyframes curtain-right { 0%,12% { transform:translateZ(18px) scaleX(1); } 100% { transform:translateX(5%) rotateY(12deg) scaleX(.18); opacity:1; } }
+.scene img { --rx:0deg; --ry:0deg; }
+.scene img.pop-ready { animation:none; transform:translateZ(25px) scale(1.10) rotateX(var(--rx)) rotateY(var(--ry)); transition:transform .25s ease; }
+.spark { position:absolute; left:50%; top:50%; z-index:4; pointer-events:none; color:#ffdf91; text-shadow:0 0 9px #ffca60; animation:spark-out 2s ease-out both; }
+@keyframes spark-out { 0% { transform:translate(0,0) scale(.3); opacity:0; } 20% { opacity:1; } 100% { transform:translate(var(--dx),var(--dy)) scale(.7); opacity:0; } }
+.door.opened .symbol { animation:heart-glow 2.8s ease-in-out infinite; }
+@keyframes heart-glow { 50% { transform:scale(1.13); filter:drop-shadow(0 0 7px #f4d18a); } }
+.snow-layer { position:fixed; inset:0; pointer-events:none; overflow:hidden; z-index:0; }
+.snow-layer.front { z-index:11; }
+.snowflake { position:absolute; top:-25px; color:#fff7e9; animation:snow-fall linear infinite; }
+@keyframes snow-fall { to { transform:translate(35px,calc(100vh + 50px)); } }
+header,.controls,.calendar,footer { position:relative; }
+.panel.finale { box-shadow:0 0 45px #f4d18a66; }
+.panel .message { animation:message-in 2.8s ease both; }
+@keyframes message-in { 0%,55% { opacity:0; transform:translateY(8px); } 100% { opacity:1; transform:none; } }
+@media(prefers-reduced-motion:reduce) { .snow-layer,.spark { display:none; } .door.opened .symbol,.panel .message { animation:none; } .scene img.pop-ready { transform:none; } }
 </style>
 </head>
 <body>
@@ -397,7 +418,33 @@ function openDoor(i) {
   right.className = "curtain right";
   cover.append(left, right, face);
   scene.appendChild(cover);
-  right.addEventListener("animationend", () => cover.remove(), {once:true});
+  document.querySelector(".panel").classList.toggle("finale", i===23);
+  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (!reduced) {
+    for(let k=0;k<(i===23?42:18);k++){
+      const spark=document.createElement("span");
+      spark.className="spark"; spark.setAttribute("aria-hidden","true");
+      spark.textContent=k%3===0?"✦":"·";
+      const angle=k*2.399, distance=65+(k%9)*12;
+      spark.style.setProperty("--dx",Math.cos(angle)*distance+"px");
+      spark.style.setProperty("--dy",Math.sin(angle)*distance+"px");
+      spark.style.animationDelay=(.45+k*.025)+"s";
+      spark.style.fontSize=(9+k%5*3)+"px";
+      scene.appendChild(spark);
+      spark.addEventListener("animationend",()=>spark.remove(),{once:true});
+    }
+    img.addEventListener("animationend",()=>img.classList.add("pop-ready"),{once:true});
+    img.addEventListener("pointermove",e=>{
+      if(e.pointerType!=="mouse" || !img.classList.contains("pop-ready"))return;
+      const q=img.getBoundingClientRect();
+      img.style.setProperty("--ry",((e.clientX-q.left)/q.width-.5)*12+"deg");
+      img.style.setProperty("--rx",(.5-(e.clientY-q.top)/q.height)*12+"deg");
+    });
+    img.addEventListener("pointerleave",()=>{img.style.setProperty("--rx","0deg");img.style.setProperty("--ry","0deg");});
+  }
+  const message=$("message");
+  message.style.animation="none"; void message.offsetWidth; message.style.animation="";
+  
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) cover.remove();
 
   const query = encodeURIComponent(
@@ -468,6 +515,20 @@ document.addEventListener("keydown",e => {
 });
 
 renderCalendar();
+if(!window.matchMedia("(prefers-reduced-motion: reduce)").matches){
+  for(let layer=0;layer<2;layer++){
+    const snow=document.createElement("div"); snow.className="snow-layer"+(layer?" front":""); snow.setAttribute("aria-hidden","true");
+    for(let k=0;k<(layer?10:22);k++){
+      const f=document.createElement("span"); f.className="snowflake"; f.textContent="❄";
+      f.style.left=((k*37+layer*13)%100)+"%";
+      f.style.fontSize=(layer?12+k%4*3:6+k%4*2)+"px";
+      f.style.opacity=layer?".35":".22";
+      f.style.animationDuration=(layer?10+k%5:17+k%7)+"s";
+      f.style.animationDelay=-(k*2.7)+"s"; snow.appendChild(f);
+    }
+    document.body.prepend(snow);
+  }
+}
 </script>
 </body>
 </html>
