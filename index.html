@@ -376,6 +376,27 @@ body.welcome .door { animation:welcome-in .85s ease both; animation-delay:calc(1
 #pilotAnswer p {color:var(--gold);line-height:1.5}
 @keyframes pilot-fade {from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 @media(prefers-reduced-motion:reduce){#pilotAnswer{animation:none}}
+/* Door 01 reveal choreography */
+#pilotQuestion[hidden],#pilotHints[hidden]{display:none!important}
+#riddlePilot.solved {margin-bottom:0;border-bottom:0;border-radius:12px 12px 0 0;background:radial-gradient(ellipse at 50% 25%,#d9b67516,transparent 65%),#102b26}
+#riddlePilot.solved + #pilotMusic {margin-top:0;padding:0 18px 18px;border:1px solid #dfb979;border-top:0;border-radius:0 0 12px 12px;background:#102b26}
+#riddlePilot.solved + #pilotMusic .music-heading,#riddlePilot.solved + #pilotMusic #reveal {display:none}
+#riddlePilot.solved + #pilotMusic .music-divider {margin:0 0 14px}
+#pilotAnswer {animation:none}
+#pilotAnswer svg {width:112px;max-width:45%;margin:12px auto 20px;filter:drop-shadow(0 5px 4px #0007) drop-shadow(0 0 18px #f4d18a55)}
+#pilotAnswer .pilot-song {font:600 clamp(26px,4.5vw,36px)/1.2 "Cormorant Garamond",Georgia,serif;margin:8px 0;color:var(--gold)}
+#pilotAnswer .pilot-artist {letter-spacing:.18em;color:#e5d3af;margin:8px 0}
+#pilotAnswer .pilot-caption,#pilotAnswer .pilot-reaction {font:600 italic 22px/1.4 "Cormorant Garamond",Georgia,serif}
+#pilotAnswer .pilot-ornament {color:#dfb979;letter-spacing:.15em}
+#riddlePilot.departing #pilotQuestion,#riddlePilot.departing #pilotHints,#riddlePilot.departing button {animation:pilot-out .4s ease both;pointer-events:none}
+#riddlePilot.celebrating #pilotAnswer svg {animation:pilot-heart .8s ease both}
+#riddlePilot.celebrating .pilot-details {animation:pilot-fade .65s .8s ease both}
+#riddlePilot.celebrating .pilot-reaction {animation:pilot-fade .6s 1.6s ease both}
+#riddlePilot.celebrating .spark {animation-duration:2.8s}
+#pilotMusic.pilot-arriving {animation:pilot-fade .65s ease both}
+@keyframes pilot-out {to{opacity:0;transform:translateY(-5px)}}
+@keyframes pilot-heart {from{opacity:0;transform:scale(.72)}to{opacity:1;transform:scale(1)}}
+@media(prefers-reduced-motion:reduce){#riddlePilot *,#pilotMusic.pilot-arriving{animation:none!important}}
 </style>
 </head>
 <body>
@@ -414,8 +435,8 @@ body.welcome .door { animation:welcome-in .85s ease both; animation-delay:calc(1
     <p id="message" class="message"></p>
 
     <section id="riddlePilot" hidden aria-label="Musikalisches Rätsel">
-      <h3>Welche Melodie versteckt sich hier?</h3>
-      <p>Schau genau hin, lies zwischen den Zeilen und hör auf dein Herz.</p>
+      <div id="pilotQuestion"><h3>Welche Melodie versteckt sich hier?</h3>
+      <p>Schau genau hin, lies zwischen den Zeilen und hör auf dein Herz.</p></div>
       <div id="pilotHints" aria-live="polite"></div>
       <button id="pilotHint" type="button">Ein kleiner Hinweis</button>
       <button id="pilotReveal" type="button">Unsere Melodie enthüllen</button>
@@ -589,18 +610,22 @@ for(const mode of Object.keys(pilotSolved)){
   try { pilotSolved[mode]=localStorage.getItem("advent-riddle-2026-"+mode+"-01")==="1"; } catch(e){}
 }
 const pilotMode=()=>preview?"preview":"christmas";
-const pilotLocked=()=>current===0&&!pilotSolved[pilotMode()];
-let pilotHintCount=0;
+const pilotLocked=()=>current===0&&(!pilotSolved[pilotMode()]||pilotAnimating);
+let pilotHintCount=0, pilotAnimating=false, pilotTimers=[];
+function cancelPilotAnimation(){pilotTimers.forEach(clearTimeout);pilotTimers=[];pilotAnimating=false;$("riddlePilot").classList.remove("departing","celebrating");$("pilotMusic").classList.remove("pilot-arriving");}
+function pilotLater(fn,ms){pilotTimers.push(setTimeout(fn,ms));}
 function renderPilot(){
   const active=current===0, solved=active&&!pilotLocked();
   $("riddlePilot").hidden=!active||!imageReady;
+  $("riddlePilot").classList.toggle("solved",solved);
+  $("pilotQuestion").hidden=solved;
   $("pilotMusic").hidden=active&&(!imageReady||!solved);
   $("pilotHints").hidden=solved;
   $("pilotHint").hidden=solved||pilotHintCount>=3;
   $("pilotReveal").hidden=solved;
   $("pilotAnswer").hidden=!solved;
   $("pilotHint").textContent=["Ein kleiner Hinweis","Noch ein Hinweis","Ein letzter Hinweis"][pilotHintCount]||"";
-  $("pilotAnswer").innerHTML=solved?'<svg viewBox="0 0 40 40" aria-hidden="true"><defs><linearGradient id="pilotGold" x2=".8" y2="1"><stop stop-color="#fff4c0"/><stop offset=".45" stop-color="#e8b44e"/><stop offset="1" stop-color="#98601f"/></linearGradient></defs><path d="M20 35C15 30 3 23 3 13C3 3 15 2 20 11C25 2 37 3 37 13C37 23 25 30 20 35Z" fill="url(#pilotGold)" stroke="#ffe7a0"/></svg><p>Unsere heutige Melodie<br><strong>I Do, I Do, I Do, I Do, I Do</strong><br>ABBA</p><p>Na, hast du es erraten? ♡</p>':"";
+  $("pilotAnswer").innerHTML=solved?'<div class="pilot-ornament" aria-hidden="true">✧ ── ♡ ── ✧</div><svg viewBox="0 0 40 40" aria-hidden="true"><defs><linearGradient id="pilotGold" x1=".15" y1="0" x2=".85" y2="1"><stop stop-color="#fff8d8"/><stop offset=".23" stop-color="#f9da8d"/><stop offset=".5" stop-color="#d99c36"/><stop offset=".72" stop-color="#f5cb6b"/><stop offset="1" stop-color="#80501c"/></linearGradient></defs><path d="M20 35C15 30 3 23 3 13C3 3 15 2 20 11C25 2 37 3 37 13C37 23 25 30 20 35Z" fill="#704b20" transform="translate(0 1.3)"/><path d="M20 35C15 30 3 23 3 13C3 3 15 2 20 11C25 2 37 3 37 13C37 23 25 30 20 35Z" fill="url(#pilotGold)" stroke="#ffe7a0" stroke-width=".55"/><path d="M6 13Q7 5 15 8" stroke="#fff9dc" stroke-width="1.5" stroke-linecap="round" fill="none" opacity=".8"/></svg><div class="pilot-details"><p class="pilot-caption">Unsere heutige Melodie</p><p class="pilot-song">I Do, I Do, I Do, I Do, I Do</p><p class="pilot-artist">ABBA</p></div><p class="pilot-reaction">Na, hast du es erraten? ♡</p>':"";
 }
 $("pilotHint").addEventListener("click",()=>{
   if(!imageReady||!pilotLocked()||pilotHintCount>=3)return;
@@ -611,23 +636,33 @@ $("pilotHint").addEventListener("click",()=>{
   $("pilotHint").textContent=["Ein kleiner Hinweis","Noch ein Hinweis","Ein letzter Hinweis"][pilotHintCount]||"";
 });
 $("pilotReveal").addEventListener("click",()=>{
-  if(!imageReady||!pilotLocked())return;
+  if(!imageReady||!pilotLocked()||pilotAnimating)return;
   const mode=pilotMode();pilotSolved[mode]=true;
   try {localStorage.setItem("advent-riddle-2026-"+mode+"-01","1");}catch(e){}
-  renderPilot();
-  $("nextDoor").disabled = !available(current+2);
-  if(!window.matchMedia("(prefers-reduced-motion: reduce)").matches){
-    for(let k=0;k<18;k++){
+  const finish=()=>{pilotAnimating=false;$("pilotMusic").hidden=false;$("nextDoor").disabled=!available(current+2);showEmbeddedMusic();};
+  if(window.matchMedia("(prefers-reduced-motion: reduce)").matches){renderPilot();finish();return;}
+  pilotAnimating=true;
+  $("riddlePilot").classList.add("departing");
+  pilotLater(()=>{
+    $("riddlePilot").classList.remove("departing");
+    $("riddlePilot").classList.add("celebrating");
+    pilotAnimating=false;renderPilot();pilotAnimating=true;
+    $("pilotMusic").hidden=true;
+  },400);
+  pilotLater(()=>{
+    for(let k=0;k<24;k++){
       const spark=document.createElement("span");spark.className="spark";spark.setAttribute("aria-hidden","true");spark.textContent=k%3?"·":"✦";
-      const angle=k*2.399,distance=45+k%9*9;
+      const angle=k*2.399,distance=55+k%9*11;
       spark.style.setProperty("--dx",Math.cos(angle)*distance+"px");
       spark.style.setProperty("--dy",Math.sin(angle)*distance+"px");
+      spark.style.top="85px";spark.style.animationDelay=(k%6*.035)+"s";
       $("pilotAnswer").appendChild(spark);
       spark.addEventListener("animationend",()=>spark.remove(),{once:true});
     }
-  }
-  showEmbeddedMusic();
+  },800);
+  pilotLater(()=>{$("pilotMusic").classList.add("pilot-arriving");finish();},2000);
 });
+
 function available(day) {
   if (preview) return true;
   const now = new Date();
@@ -658,7 +693,7 @@ function renderCalendar() {
 
 function openDoor(i) {
   if (!available(i+1)) return;
-  stopEmbeddedMusic(); imageReady=false;
+  cancelPilotAnimation();stopEmbeddedMusic(); imageReady=false;
   current = i;
   pilotHintCount=0;$("pilotHints").replaceChildren();renderPilot();
   $("prevDoor").disabled = i===0 || !available(i);
@@ -819,7 +854,7 @@ $("forgetMusic").addEventListener("click", () => {
 });
 
 function closeDoor() {
-  stopEmbeddedMusic();imageReady=false;
+  cancelPilotAnimation();stopEmbeddedMusic();imageReady=false;
   $("overlay").classList.remove("visible");
   document.body.style.overflow = "";
 }
