@@ -237,6 +237,27 @@ header,.controls,.calendar,footer { position:relative; }
 .hero-photo { width:min(90%,480px); height:auto; border:0; border-radius:0; box-shadow:none; background:transparent; filter:drop-shadow(0 0 16px #e9b85b44); animation:hero-float 6s ease-in-out infinite; }
 @keyframes hero-float { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-5px); } }
 @media(prefers-reduced-motion:reduce) { .hero-photo { animation:none; } }
+
+body { background:radial-gradient(ellipse at 50% 12%,#d9b67519,transparent 32%),radial-gradient(ellipse at 15% 45%,#d9b6750c,transparent 24%),radial-gradient(ellipse at 85% 70%,#d9b6750d,transparent 25%),linear-gradient(155deg,#254b43,#102e32 55%,#081b25); }
+header { padding-top:28px; }
+header h1 { letter-spacing:.025em; text-shadow:0 2px 1px #704b26,0 5px 18px #0005; }
+.hero-photo { width:min(90%,510px); margin:12px auto 14px; }
+.hero-title { font-weight:normal; letter-spacing:.025em; margin:12px 0 8px; }
+header p { color:#f5e5c8; font-size:15px; margin:8px 0; }
+.controls { margin:12px auto 18px; }
+.calendar { gap:14px; margin-bottom:8px; }
+.calendar-flourish { display:flex; align-items:center; justify-content:center; gap:14px; max-width:620px; margin:0 auto; padding:0 18px; color:#dfb979; font:26px Georgia,serif; }
+.calendar-flourish::before,.calendar-flourish::after { content:""; flex:1; height:1px; background:linear-gradient(90deg,transparent,#dfb979); }
+.calendar-flourish::after { transform:rotate(180deg); }
+.calendar-flourish.lower { margin-bottom:24px; }
+.door { background:radial-gradient(ellipse at 25% 10%,#ffffff18,transparent 55%),linear-gradient(145deg,#a32b44,#74172d 60%,#4e1022); border:2px solid #dfb979; box-shadow:inset 0 2px 3px #fff2,inset 0 -5px 9px #0004,0 6px 0 #43251c,0 10px 16px #0006; transition:transform .25s,box-shadow .25s; }
+.door::before { content:""; position:absolute; inset:5px; border:1px solid #e7c58088; border-radius:7px; pointer-events:none; }
+.door::after { content:""; position:absolute; inset:8px; pointer-events:none; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Cpath d='M2 25V2H25M5 17Q5 5 17 5M5 10Q14 10 10 5' fill='none' stroke='%23e7c580' stroke-width='1.2'/%3E%3C/svg%3E") top left/23px 23px no-repeat; }
+.door .number { text-shadow:0 2px 1px #70451f,0 3px 7px #0007; }
+.door:not(:disabled):hover { transform:translateY(-4px); box-shadow:inset 0 0 20px #f4d18a22,0 7px 0 #43251c,0 0 22px #f4d18a55; }
+.door.opened { background:linear-gradient(145deg,#426d63,#21453f); }
+.door:last-child:not(.opened) { background:radial-gradient(ellipse at 50% 30%,#bd5260,#781b31 65%,#4e1022); border-color:#ffe6a0; box-shadow:inset 0 0 18px #f4d18a33,0 6px 0 #43251c,0 0 19px #f4d18a44; }
+@media(max-width:600px) { .calendar { gap:10px; } .door::after { background-size:15px 15px; } .door::before { inset:4px; } }
 </style>
 </head>
 <body>
@@ -255,7 +276,9 @@ header,.controls,.calendar,footer { position:relative; }
   </button>
 </div>
 
+<div class="calendar-flourish" aria-hidden="true"><span>✧</span><span>❦</span><span>✧</span></div>
 <main id="calendar" class="calendar"></main>
+<div class="calendar-flourish lower" aria-hidden="true"><span>✧</span><span>❦</span><span>✧</span></div>
 
 <div id="overlay" class="overlay"
      onclick="if(event.target===this)closeDoor()">
