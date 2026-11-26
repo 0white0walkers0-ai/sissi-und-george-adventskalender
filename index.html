@@ -432,6 +432,13 @@ body.pilot-snow-paused .snowflake {animation-play-state:paused!important}
 /* Mobile reveal: stable geometry, opacity-only transitions */
 @media(max-width:768px), (pointer:coarse) and (max-width:1024px){
   .overlay.pilot-mobile-stable {overflow-anchor:none;scroll-behavior:auto}
+  .overlay.pilot-mobile-stable .panel {overflow-anchor:none}
+  #riddlePilot.mobile-celebrating {box-sizing:border-box;min-height:var(--mobile-riddle-height,0px);display:flex;flex-direction:column;justify-content:center;border:1px solid #dfb979;border-radius:12px;margin-bottom:16px}
+  #riddlePilot.mobile-celebrating + #pilotMusic {border:1px solid #dfb979;border-radius:12px;padding:14px 18px 18px}
+  #riddlePilot.mobile-celebrating #pilotAnswer {animation:pilot-mobile-fade .4s both;transform:none}
+  .overlay.pilot-mobile-stable #pilotMusic.pilot-preparing {visibility:hidden;opacity:0}
+  .overlay.pilot-mobile-stable #riddlePilot.departing #pilotQuestion,.overlay.pilot-mobile-stable #riddlePilot.departing #pilotHints,.overlay.pilot-mobile-stable #riddlePilot.departing button {animation:pilot-mobile-out .22s both}
+  @keyframes pilot-mobile-out {from{opacity:1}to{opacity:0}}
   #pilotStage.pilot-active #embeddedMusic.pilot-spotify-slot {height:208px;min-height:208px;overflow:hidden}
   #pilotStage.pilot-active #embeddedMusic.pilot-spotify-slot iframe {height:152px;min-height:152px;max-height:152px}
   #pilotStage.pilot-active #embeddedMusic.pilot-spotify-slot p {line-height:18px;margin:6px 0}
@@ -669,7 +676,7 @@ const pilotMode=()=>preview?"preview":"christmas";
 const pilotLocked=()=>current===0&&(!pilotSolved[pilotMode()]||pilotAnimating);
 let pilotHintCount=0, pilotAnimating=false, pilotTimers=[], pilotChoosing=false;
 let pilotExpansion=null, pilotNavigationMotion=null;
-function cancelPilotAnimation(){pilotTimers.forEach(clearTimeout);pilotTimers=[];pilotAnimating=false;if(pilotExpansion){pilotExpansion.cancel();pilotExpansion=null;}if(pilotNavigationMotion){pilotNavigationMotion.cancel();pilotNavigationMotion=null;}document.body.classList.remove("pilot-snow-paused");$("overlay").classList.remove("pilot-mobile-stable");$("riddlePilot").classList.remove("mobile-celebrating");$("pilotMusic").classList.remove("mobile-arriving");$("pilotStage").classList.remove("pilot-expanding");$("riddlePilot").classList.remove("departing","celebrating");$("pilotMusic").classList.remove("pilot-arriving","pilot-preparing");}
+function cancelPilotAnimation(){pilotTimers.forEach(clearTimeout);pilotTimers=[];pilotAnimating=false;if(pilotExpansion){pilotExpansion.cancel();pilotExpansion=null;}if(pilotNavigationMotion){pilotNavigationMotion.cancel();pilotNavigationMotion=null;}document.body.classList.remove("pilot-snow-paused");$("overlay").classList.remove("pilot-mobile-stable");$("riddlePilot").classList.remove("mobile-celebrating");$("riddlePilot").style.removeProperty("--mobile-riddle-height");$("pilotMusic").classList.remove("mobile-arriving");$("pilotStage").classList.remove("pilot-expanding");$("riddlePilot").classList.remove("departing","celebrating");$("pilotMusic").classList.remove("pilot-arriving","pilot-preparing");}
 function pilotLater(fn,ms){pilotTimers.push(setTimeout(fn,ms));}
 function renderPilot(){
   const active=current===0, solved=active&&!pilotLocked();
@@ -700,20 +707,31 @@ $("pilotReveal").addEventListener("click",()=>{
   if(window.matchMedia("(prefers-reduced-motion: reduce)").matches){renderPilot();finish();return;}
   const mobile=window.matchMedia("(max-width:768px), (pointer:coarse) and (max-width:1024px)").matches;
   const overlay=$("overlay");
-  if(mobile)overlay.classList.add("pilot-mobile-stable");
+  let mobileAnchor=null;
+  const preserveMobileAnchor=()=>{
+    if(mobileAnchor===null)return;
+    const delta=$("riddlePilot").getBoundingClientRect().top-mobileAnchor;
+    if(Math.abs(delta)>1)overlay.scrollTop+=delta;
+  };
+  if(mobile){
+    overlay.classList.add("pilot-mobile-stable");
+    const riddle=$("riddlePilot");
+    mobileAnchor=riddle.getBoundingClientRect().top;
+    riddle.style.setProperty("--mobile-riddle-height",Math.ceil(riddle.getBoundingClientRect().height)+"px");
+    if(document.activeElement instanceof HTMLElement)document.activeElement.blur();
+  }
   pilotAnimating=true;
   document.body.classList.add("pilot-snow-paused");
   $("riddlePilot").classList.add("departing");
   pilotLater(()=>{
     const stage=$("pilotStage");
     if(mobile){
-      const scroll=overlay.scrollTop;
       $("riddlePilot").classList.remove("departing");
       $("riddlePilot").classList.add("mobile-celebrating");
       pilotAnimating=false;renderPilot();pilotAnimating=true;
       $("pilotMusic").classList.add("pilot-preparing");
-      $("pilotMusic").hidden=false;
-      overlay.scrollTop=scroll;
+      $("pilotMusic").hidden=true;
+      preserveMobileAnchor();
       return;
     }
     const first=stage.getBoundingClientRect();
@@ -734,7 +752,7 @@ $("pilotReveal").addEventListener("click",()=>{
       if(navFirst&&navLast)pilotNavigationMotion=nav.animate([{transform:"translateY("+(navFirst.top-navLast.top)+"px)"},{transform:"none"}],timing);
       pilotExpansion.onfinish=()=>{if(pilotExpansion){pilotExpansion.cancel();pilotExpansion=null;}if(pilotNavigationMotion){pilotNavigationMotion.cancel();pilotNavigationMotion=null;}stage.classList.remove("pilot-expanding");};
     }else stage.classList.remove("pilot-expanding");
-  },400);
+  },mobile?220:400);
   pilotLater(()=>{
     for(let k=0;k<24;k++){
       const spark=document.createElement("span");spark.className="spark";spark.setAttribute("aria-hidden","true");spark.textContent=k%3?"·":"✦";
@@ -748,13 +766,18 @@ $("pilotReveal").addEventListener("click",()=>{
   },mobile?800:1150);
   if(mobile){
     pilotLater(()=>{
+      mobileAnchor=$("riddlePilot").getBoundingClientRect().top;
+      $("pilotMusic").hidden=false;
       showEmbeddedMusic(true);
+      preserveMobileAnchor();
     },1500);
     pilotLater(()=>{
       document.body.classList.remove("pilot-snow-paused");
       pilotAnimating=false;
+      mobileAnchor=$("riddlePilot").getBoundingClientRect().top;
       $("pilotMusic").classList.remove("pilot-preparing");
       $("pilotMusic").classList.add("mobile-arriving");
+      preserveMobileAnchor();
       $("nextDoor").disabled=!available(current+2);
       revealSong();
     },2000);
