@@ -429,6 +429,8 @@ body.welcome .door { animation:welcome-in .65s ease both; animation-delay:calc(2
 #pilotStage.pilot-expanding {overflow:hidden;transform-origin:top center;will-change:transform}
 #pilotStage.pilot-height-expanding {box-sizing:border-box;will-change:auto}
 .overlay.pilot-desktop-stable {overflow-anchor:none;scroll-behavior:auto}
+.overlay.pilot-desktop-stable #pilotStage.pilot-active #embeddedMusic.pilot-spotify-slot {display:flow-root;height:190px;min-height:190px;max-height:190px;overflow:hidden}
+.overlay.pilot-desktop-stable #embeddedMusic.pilot-spotify-slot iframe {height:152px;min-height:152px;max-height:152px}
 #pilotStage.pilot-height-expanding #riddlePilot {opacity:0}
 body.pilot-snow-paused .snowflake {animation-play-state:paused!important}
 #pilotStage.pilot-active #embeddedMusic.pilot-spotify-slot {box-sizing:border-box}
@@ -883,7 +885,8 @@ $("pilotReveal").addEventListener("click",()=>{
   if(!imageReady||!pilotLocked()||pilotAnimating)return;
   const mode=pilotMode();pilotSolved[mode].add(current);
   try {localStorage.setItem(pilotKey(mode,current),"1");}catch(e){}
-  const finish=()=>{document.body.classList.remove("pilot-snow-paused");pilotAnimating=false;$("pilotMusic").hidden=false;$("pilotMusic").classList.remove("pilot-preparing");$("nextDoor").disabled=current!==23&&!available(current+2);showEmbeddedMusic();};
+  let desktopSpotifyPrepared=false;
+  const finish=()=>{document.body.classList.remove("pilot-snow-paused");pilotAnimating=false;$("pilotMusic").hidden=false;$("pilotMusic").classList.remove("pilot-preparing");$("nextDoor").disabled=current!==23&&!available(current+2);if(desktopSpotifyPrepared){revealSong();}else{showEmbeddedMusic();}};
   if(window.matchMedia("(prefers-reduced-motion: reduce)").matches){renderPilot();finish();return;}
   const mobile=window.matchMedia("(max-width:768px), (pointer:coarse) and (max-width:1024px)").matches;
   const overlay=$("overlay");
@@ -922,6 +925,11 @@ $("pilotReveal").addEventListener("click",()=>{
     pilotAnimating=false;renderPilot();pilotAnimating=true;
     $("pilotMusic").classList.add("pilot-preparing");
     $("pilotMusic").hidden=false;
+    // Mount Spotify once, while hidden, before measuring the final layout.
+    if(!pilotChoosing&&(preferredMusic||"spotify")==="spotify"&&musicTracks[current+1]?.spotify){
+      showEmbeddedMusic(true);
+      desktopSpotifyPrepared=!!$("embeddedMusic").querySelector("iframe.spotify-frame");
+    }
     const last=stage.getBoundingClientRect();
     if(typeof stage.animate==="function"&&last.height>0){
       const timing={duration:900,easing:"cubic-bezier(.22,.61,.36,1)",fill:"both"};
