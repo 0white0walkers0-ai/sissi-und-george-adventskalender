@@ -304,7 +304,7 @@ body.welcome .door { animation:welcome-in .65s ease both; animation-delay:calc(2
 .panel .scene img.pop-ready {transform:scale(1.10);transition:none}
 .panel .scene.curtain-open {border-color:transparent!important;box-shadow:none!important;background:none!important}
 .panel .scene.curtain-open img {outline:none!important}
-.panel .scene.curtain-open::before,.panel .scene.curtain-open::after {content:none!important;display:none!important}
+/* Keep the decorative pseudo-elements visible after opening. */
 .panel.opening-skipped .message {animation:none!important;opacity:1;transform:none}
 .panel .stage-ornament { display:none; }
 .panel .scene::before,.panel .scene::after { content:"✧ ─── ♡ ─── ✧"; position:absolute; left:50%; transform:translateX(-50%); color:#dfb979; white-space:nowrap; font:18px Georgia,serif; pointer-events:none; }
@@ -617,6 +617,14 @@ header h1 span {min-width:0}
 }
 @media(max-width:768px),(pointer:coarse) and (max-width:1024px){
  .overlay.pilot-desktop-stable .panel:not(.finale) #pilotStage::before{inset:12px 0 0}
+}
+
+/* 06.2.0.60 – stable heart ornaments outside the animated image */
+@media(max-width:768px),(pointer:coarse) and (max-width:1024px){
+ .panel:not(.finale) .scene,.panel:not(.finale) .scene:not(.curtain-open){margin-top:42px;margin-bottom:42px}
+ .panel:not(.finale) .scene::before,.panel:not(.finale) .scene::after{z-index:110;line-height:20px}
+ .panel:not(.finale) .scene::before{top:-34px}
+ .panel:not(.finale) .scene::after{bottom:-34px}
 }
 </style>
 </head>
