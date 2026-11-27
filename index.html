@@ -302,7 +302,7 @@ body.welcome .door { animation:welcome-in .65s ease both; animation-delay:calc(2
 .panel .scene { border:1px solid #dfb979; background:radial-gradient(ellipse at top,#d9b67530,transparent 80%); box-shadow:0 0 0 3px #dfb97922; }
 .panel .scene img { outline:1px solid #dfb979; outline-offset:2px; }
 .panel .scene.curtain-open {border-color:transparent;box-shadow:none;background:none}
-.panel .scene.curtain-open img {outline:none}
+.panel .scene.curtain-open img {outline:none;border-radius:clamp(12px,2.4vw,24px);box-shadow:0 2px 0 rgba(255,255,255,.24),0 4px 0 #152c29,0 7px 0 #0c211e,0 12px 22px #0007,0 22px 40px #0005}
 .panel .scene.curtain-open::before,.panel .scene.curtain-open::after {content:none}
 .panel.opening-skipped .message {animation:none!important;opacity:1;transform:none}
 .panel .stage-ornament { display:none; }
@@ -1030,16 +1030,12 @@ function renderCalendar() {
   });
 }
 
-const openingSeen=new Set();
 function openDoor(i) {
   if (!available(i+1)) return;
   cancelPilotAnimation();stopEmbeddedMusic(); imageReady=false;
   current = i;
   const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const openingKey="advent-opening-2026-"+pilotMode()+"-"+String(i+1).padStart(2,"0");
-  let seen=openingSeen.has(openingKey);
-  try {seen=seen||localStorage.getItem(openingKey)==="1";}catch(e){}
-  const animateOpening=!reduced&&!seen;
+  const animateOpening=!reduced;
   document.querySelector(".panel").classList.toggle("opening-skipped",!animateOpening);
   pilotChoosing=false;
   pilotHintCount=0;$("pilotHints").replaceChildren();
@@ -1212,7 +1208,6 @@ function openDoor(i) {
   const ready=()=>{
     if(current!==i || !img.isConnected || !$("overlay").classList.contains("visible"))return;
     imageReady=true;renderPilot();
-    if(animateOpening){openingSeen.add(openingKey);try{localStorage.setItem(openingKey,"1");}catch(e){}}
     riddle.classList.remove("riddle-opening");
     if(pilotLocked()&&animateOpening){
       riddle.classList.add("riddle-entering");
