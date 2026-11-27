@@ -471,33 +471,13 @@ body.pilot-snow-paused .snowflake {animation-play-state:paused!important}
 #pilotStage.pilot-expanding .pilot-ornament {opacity:0}
 #pilotStage.pilot-active #embeddedMusic.pilot-spotify-slot {display:flow-root;min-height:190px}
 #pilotStage.saved-opening #embeddedMusic.pilot-spotify-slot,#pilotStage.saved-entering #embeddedMusic.pilot-spotify-slot {height:190px;overflow:hidden}
-@media(max-width:768px), (pointer:coarse) and (max-width:1024px){#pilotStage.saved-opening #embeddedMusic.pilot-spotify-slot,#pilotStage.saved-entering #embeddedMusic.pilot-spotify-slot{height:208px}}
+#pilotStage.pilot-active #embeddedMusic.pilot-spotify-slot {height:190px;overflow:hidden}
 #pilotStage.pilot-active #embeddedMusic.pilot-spotify-slot p {line-height:18px;margin:6px 0}
 #pilotStage.pilot-active #embeddedMusic.pilot-spotify-slot iframe {height:152px}
 #pilotStage.pilot-expanding #pilotAnswer svg {animation:none;opacity:0}
 #pilotStage.pilot-expanding .pilot-details,#pilotStage.pilot-expanding .pilot-reaction {animation:none;opacity:0}
 #riddlePilot.celebrating #pilotAnswer svg {animation-delay:.2s}
 #riddlePilot.celebrating .pilot-reaction {animation-delay:1.4s}
-/* Mobile reveal: stable geometry, opacity-only transitions */
-@media(max-width:768px), (pointer:coarse) and (max-width:1024px){
-  .overlay.pilot-mobile-stable {overflow-anchor:none;scroll-behavior:auto}
-  .overlay.pilot-mobile-stable .panel {overflow-anchor:none}
-  #riddlePilot.mobile-celebrating {box-sizing:border-box;min-height:0;display:flex;flex-direction:column;justify-content:center;border:1px solid #dfb979;border-radius:12px;margin-bottom:16px}
-  #riddlePilot.mobile-celebrating + #pilotMusic {border:1px solid #dfb979;border-radius:12px;padding:14px 18px 18px}
-  #riddlePilot.mobile-celebrating #pilotAnswer {animation:pilot-mobile-fade .4s both;transform:none}
-  .overlay.pilot-mobile-stable #pilotMusic.pilot-preparing {visibility:hidden;opacity:0}
-  .overlay.pilot-mobile-stable #riddlePilot.departing #pilotQuestion,.overlay.pilot-mobile-stable #riddlePilot.departing #pilotHints,.overlay.pilot-mobile-stable #riddlePilot.departing button {animation:pilot-mobile-out .22s both}
-  @keyframes pilot-mobile-out {from{opacity:1}to{opacity:0}}
-  #pilotStage.pilot-active #embeddedMusic.pilot-spotify-slot {height:208px;min-height:208px;overflow:hidden}
-  #pilotStage.pilot-active #embeddedMusic.pilot-spotify-slot iframe {height:152px;min-height:152px;max-height:152px}
-  #pilotStage.pilot-active #embeddedMusic.pilot-spotify-slot p {line-height:18px;margin:6px 0}
-  #riddlePilot.mobile-celebrating #pilotAnswer svg {animation:pilot-mobile-fade .45s .1s both}
-  #riddlePilot.mobile-celebrating .pilot-details {animation:pilot-mobile-fade .5s .4s both}
-  #riddlePilot.mobile-celebrating .pilot-reaction {animation:pilot-mobile-fade .5s .8s both}
-  #pilotMusic.mobile-arriving {animation:pilot-mobile-fade .5s both}
-  #riddlePilot.mobile-celebrating .spark {animation-duration:2.8s}
-}
-@keyframes pilot-mobile-fade {from{opacity:0}to{opacity:1}}
 .hero-year {margin:6px auto 10px;color:var(--gold);font-size:clamp(12px,2vw,15px);letter-spacing:.12em}
 header h1 .name-heart {flex-shrink:0}
 header h1 span {min-width:0}
@@ -924,35 +904,13 @@ $("pilotReveal").addEventListener("click",()=>{
   let desktopSpotifyPrepared=false;
   const finish=()=>{document.body.classList.remove("pilot-snow-paused");pilotAnimating=false;$("pilotMusic").hidden=false;$("pilotMusic").classList.remove("pilot-preparing");$("nextDoor").disabled=current!==23&&!available(current+2);if(desktopSpotifyPrepared){revealSong();}else{showEmbeddedMusic();}};
   if(window.matchMedia("(prefers-reduced-motion: reduce)").matches){renderPilot();finish();return;}
-  const mobile=window.matchMedia("(max-width:768px), (pointer:coarse) and (max-width:1024px)").matches;
   const overlay=$("overlay");
-  let mobileAnchor=null;
-  const preserveMobileAnchor=()=>{
-    if(mobileAnchor===null)return;
-    const delta=$("riddlePilot").getBoundingClientRect().top-mobileAnchor;
-    if(Math.abs(delta)>1)overlay.scrollTop+=delta;
-  };
-  if(mobile){
-    overlay.classList.add("pilot-mobile-stable");
-    const riddle=$("riddlePilot");
-    mobileAnchor=riddle.getBoundingClientRect().top;
-    if(document.activeElement instanceof HTMLElement)document.activeElement.blur();
-  }
+  if(document.activeElement instanceof HTMLElement)document.activeElement.blur();
   pilotAnimating=true;
   document.body.classList.add("pilot-snow-paused");
   $("riddlePilot").classList.add("departing");
   pilotLater(()=>{
     const stage=$("pilotStage");
-    if(mobile){
-      $("riddlePilot").classList.remove("departing");
-      $("riddlePilot").classList.add("mobile-celebrating");
-      pilotAnimating=false;renderPilot();pilotAnimating=true;
-      $("pilotMusic").classList.add("pilot-preparing");
-      // Reserve the separate music section before restoring the scroll anchor.
-      $("pilotMusic").hidden=false;
-      preserveMobileAnchor();
-      return;
-    }
     const first=stage.getBoundingClientRect();
     overlay.classList.add("pilot-desktop-stable");
     stage.classList.add("pilot-expanding","pilot-height-expanding");
@@ -972,7 +930,7 @@ $("pilotReveal").addEventListener("click",()=>{
       pilotExpansion=stage.animate([{height:first.height+"px"},{height:last.height+"px"}],timing);
       pilotExpansion.onfinish=()=>{if(pilotExpansion){pilotExpansion.cancel();pilotExpansion=null;}stage.classList.remove("pilot-expanding","pilot-height-expanding");};
     }else stage.classList.remove("pilot-expanding","pilot-height-expanding");
-  },mobile?220:400);
+  },400);
   pilotLater(()=>{
     for(let k=0;k<(current===23?42:24);k++){
       const spark=document.createElement("span");spark.className="spark";spark.setAttribute("aria-hidden","true");spark.textContent=k%3?"·":"✦";
@@ -989,25 +947,8 @@ $("pilotReveal").addEventListener("click",()=>{
       $("pilotAnswer").appendChild(rain);
       pilotLater(()=>rain.remove(),6000);
     }
-  },mobile?800:1450);
-  if(mobile){
-    pilotLater(()=>{
-      mobileAnchor=$("riddlePilot").getBoundingClientRect().top;
-      $("pilotMusic").hidden=false;
-      showEmbeddedMusic(true);
-      preserveMobileAnchor();
-    },1500);
-    pilotLater(()=>{
-      document.body.classList.remove("pilot-snow-paused");
-      pilotAnimating=false;
-      mobileAnchor=$("riddlePilot").getBoundingClientRect().top;
-      $("pilotMusic").classList.remove("pilot-preparing");
-      $("pilotMusic").classList.add("mobile-arriving");
-      preserveMobileAnchor();
-      $("nextDoor").disabled=current!==23&&!available(current+2);
-      revealSong();
-    },2000);
-  }else pilotLater(()=>{$("pilotMusic").classList.add("pilot-arriving");finish();},2000);
+  },1450);
+  pilotLater(()=>{$("pilotMusic").classList.add("pilot-arriving");finish();},2000);
 });
 
 function available(day) {
