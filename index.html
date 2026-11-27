@@ -552,6 +552,33 @@ header h1 span {min-width:0}
 #pilotMusic .external-music-caption{display:flex;align-items:center;justify-content:center;gap:10px;font-size:12px;color:#d9c49b;margin:10px 0 4px}
 #pilotMusic .external-music-caption::before,#pilotMusic .external-music-caption::after{content:"";height:1px;background:#dfb97944;flex:1}
 #pilotMusic #embeddedMusic p{font-style:italic}
+
+/* 06.2.0.54 – primary embedded playback, secondary external destinations */
+#riddlePilot.solved + #pilotMusic #musicChoices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;width:100%;max-width:480px;margin:12px auto 10px}
+#pilotMusic #musicChoices button{width:100%;min-height:50px;font-size:15px;font-weight:600;border:1px solid #dfb97988}
+#pilotMusic #musicChoices button[aria-pressed="true"]{border:2px solid #f4d18a;background:#315447;box-shadow:0 0 12px #dfb97924}
+#pilotMusic #embeddedMusic{width:100%;box-sizing:border-box}
+#pilotMusic #embeddedMusic iframe{border:2px solid #dfb979;box-shadow:0 0 12px #dfb97920}
+#pilotMusic .external-music-caption{display:block;border-top:2px solid #dfb979aa;padding-top:14px;margin:18px auto 8px;max-width:480px;text-align:center;line-height:1.4}
+#pilotMusic .external-music-caption::before,#pilotMusic .external-music-caption::after{display:none}
+#riddlePilot.solved + #pilotMusic .external-music-links{max-width:480px;margin:6px auto 0}
+#pilotMusic .external-music-links a.music{background:transparent;border-color:#dfb97966;font-size:12px}
+@media(max-width:600px){
+ #riddlePilot.solved + #pilotMusic{padding:0 10px 12px}
+ #riddlePilot.solved + #pilotMusic #pilotListening{font-size:clamp(18px,5vw,23px);margin:4px 0 8px}
+ #riddlePilot.solved + #pilotMusic #musicChoices{gap:7px;margin:8px auto}
+ #pilotMusic #musicChoices button{min-height:48px;font-size:clamp(12px,3.8vw,15px);padding:7px 5px;gap:5px}
+ #musicChoices button svg{width:18px;height:18px}
+ #pilotMusic #embeddedMusic iframe{max-width:100%}
+ #pilotMusic #embeddedMusic p{font-size:11px;line-height:15px}
+ #pilotMusic .external-music-caption{margin-top:12px;padding-top:10px;font-size:11px}
+ #riddlePilot.solved + #pilotMusic .external-music-links{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+ #pilotMusic .external-music-links a.music{min-width:0;padding:7px 4px;gap:4px;font-size:clamp(10px,3.2vw,12px);overflow-wrap:anywhere}
+ #pilotMusic .external-music-links a.music svg{width:16px;height:16px}
+}
+@media(max-width:340px){
+ #riddlePilot.solved + #pilotMusic .external-music-links{grid-template-columns:1fr}
+}
 </style>
 </head>
 <body>
