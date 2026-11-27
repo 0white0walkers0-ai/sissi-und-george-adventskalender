@@ -1175,21 +1175,6 @@ function openDoor(i) {
       glint.style.setProperty("--dust-brightness",(.45+(k*13%11)*.055).toFixed(2));
       frame.appendChild(glint);
     }
-    // 06.2.0.47: extra early, clipped golden particle burst.
-    for(let k=0;k<(mobileMist?100:200);k++){
-      const glint=document.createElement("span");glint.className="mist-glint";
-      const angle=k*2.399963, radius=2+(k%17)*.72;
-      glint.style.setProperty("--x",(50+Math.cos(angle)*radius)+"%");
-      glint.style.setProperty("--y",(50+Math.sin(angle)*radius*.85)+"%");
-      glint.style.setProperty("--mx",Math.cos(angle)*(75+k%11*8)+"px");
-      glint.style.setProperty("--my",Math.sin(angle)*(55+k%11*6)+"px");
-      glint.style.setProperty("--bend",((k%2?1:-1)*(8+k%5*4))+"px");
-      glint.style.setProperty("--size",(.65+k%8*.14)+"px");
-      glint.style.setProperty("--delay",(.015+k%19*.022)+"s");
-      glint.style.setProperty("--dust-duration",(.46+k%7*.025)+"s");
-      glint.style.setProperty("--dust-brightness",(.75+k%6*.045).toFixed(2));
-      frame.appendChild(glint);
-    }
     scene.appendChild(frame);
     const positionMist=()=>{if(!frame.isConnected||!img.offsetWidth||!img.offsetHeight)return;frame.style.inset="auto";frame.style.left=img.offsetLeft+"px";frame.style.top=img.offsetTop+"px";frame.style.width=img.offsetWidth+"px";frame.style.height=img.offsetHeight+"px";frame.classList.add("mist-positioned");};
     requestAnimationFrame(positionMist);
@@ -1209,16 +1194,6 @@ function openDoor(i) {
       spark.style.fontSize=(7+k%5*2)+"px";
       scene.appendChild(spark);
       spark.addEventListener("animationend",()=>spark.remove(),{once:true});
-    }
-    for(let k=0;k<(mobileMist?16:30);k++){
-      const spark=document.createElement("span");spark.className="spark";spark.setAttribute("aria-hidden","true");spark.textContent=k%2?"✦":"✧";
-      const angle=k*2.399963,reach=.48+k%7*.07;
-      spark.style.setProperty("--dx",Math.cos(angle)*reach*Math.max(scene.clientWidth,window.innerWidth*.65)+"px");
-      spark.style.setProperty("--dy",Math.sin(angle)*reach*Math.max(scene.clientHeight,window.innerHeight*.42)+"px");
-      spark.style.animationDelay=(.02+k%13*.023)+"s";
-      spark.style.animationDuration=(.58+k%6*.023)+"s";
-      spark.style.fontSize=(5+k%4*1.5)+"px";
-      scene.appendChild(spark);spark.addEventListener("animationend",()=>spark.remove(),{once:true});
     }
     img.addEventListener("animationend",()=>img.classList.add("pop-ready"),{once:true});
   }
