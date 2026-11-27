@@ -395,6 +395,11 @@ body.welcome .door { animation:welcome-in .65s ease both; animation-delay:calc(2
 /* Musical riddle pilot */
 #riddlePilot[hidden],#pilotMusic[hidden],#pilotHint[hidden],#pilotReveal[hidden],#pilotAnswer[hidden]{display:none!important}
 #riddlePilot.riddle-opening {opacity:0;visibility:hidden;pointer-events:none}
+#pilotStage.saved-opening {opacity:0;visibility:hidden;pointer-events:none}
+#pilotStage.saved-entering {animation:riddle-entrance .6s ease-in-out both;pointer-events:none}
+#pilotStage.saved-opening #embeddedMusic:empty {display:flow-root}
+#pilotStage.saved-opening #embeddedMusic.saved-youtube-slot:empty {min-height:240px;aspect-ratio:16/9}
+@media(prefers-reduced-motion:reduce){#pilotStage.saved-entering{animation:none}}
 #riddlePilot.riddle-entering {animation:riddle-entrance .6s ease-in-out both;pointer-events:none}
 @keyframes riddle-entrance {from{opacity:0}to{opacity:1}}
 @media(prefers-reduced-motion:reduce){#riddlePilot.riddle-entering{animation:none;pointer-events:auto}}
@@ -465,6 +470,8 @@ body.pilot-snow-paused .snowflake {animation-play-state:paused!important}
 #pilotStage.pilot-active #embeddedMusic.pilot-spotify-slot {box-sizing:border-box}
 #pilotStage.pilot-expanding .pilot-ornament {opacity:0}
 #pilotStage.pilot-active #embeddedMusic.pilot-spotify-slot {display:flow-root;min-height:190px}
+#pilotStage.saved-opening #embeddedMusic.pilot-spotify-slot,#pilotStage.saved-entering #embeddedMusic.pilot-spotify-slot {height:190px;overflow:hidden}
+@media(max-width:768px), (pointer:coarse) and (max-width:1024px){#pilotStage.saved-opening #embeddedMusic.pilot-spotify-slot,#pilotStage.saved-entering #embeddedMusic.pilot-spotify-slot{height:208px}}
 #pilotStage.pilot-active #embeddedMusic.pilot-spotify-slot p {line-height:18px;margin:6px 0}
 #pilotStage.pilot-active #embeddedMusic.pilot-spotify-slot iframe {height:152px}
 #pilotStage.pilot-expanding #pilotAnswer svg {animation:none;opacity:0}
@@ -881,10 +888,10 @@ function cancelPilotAnimation(){pilotTimers.forEach(clearTimeout);pilotTimers=[]
 function pilotLater(fn,ms){pilotTimers.push(setTimeout(fn,ms));}
 function renderPilot(){
   const active=true, solved=!pilotLocked();
-  $("riddlePilot").hidden=!active||(!imageReady&&solved);
+  $("riddlePilot").hidden=!active;
   $("riddlePilot").classList.toggle("solved",solved);
   $("pilotQuestion").hidden=solved;
-  $("pilotMusic").hidden=active&&(!imageReady||!solved);
+  $("pilotMusic").hidden=active&&!solved;
   $("pilotHints").hidden=solved;
   $("pilotHint").hidden=solved||pilotHintCount>=3;
   $("pilotReveal").hidden=solved;
@@ -1044,6 +1051,11 @@ function openDoor(i) {
   riddle.classList.remove("riddle-opening","riddle-entering");
   riddle.classList.toggle("riddle-opening",pilotLocked());
   riddle.inert=pilotLocked();
+  const stage=$("pilotStage"), savedOpening=!pilotLocked()&&animateOpening;
+  stage.classList.remove("saved-opening","saved-entering");
+  stage.classList.toggle("saved-opening",savedOpening);
+  stage.inert=savedOpening;
+  $("embeddedMusic").classList.toggle("saved-youtube-slot",(preferredMusic||"spotify")==="youtube"&&!!musicTracks[i+1]?.youtube);
   renderPilot();
   $("prevDoor").disabled = i===0 || !available(i);
   $("nextDoor").disabled = pilotLocked() || (i!==23 && !available(i+2));
@@ -1218,11 +1230,16 @@ function openDoor(i) {
       pilotLater(()=>{riddle.classList.remove("riddle-entering");riddle.inert=false;},600);
     }else{riddle.inert=false;}
     showEmbeddedMusic();
+    if(savedOpening){
+      stage.classList.remove("saved-opening");
+      stage.classList.add("saved-entering");
+      pilotLater(()=>{stage.classList.remove("saved-entering");stage.inert=false;},600);
+    }
   };
   musicTimer=setTimeout(ready,animateOpening?2400:0);
   document.body.style.overflow = "hidden";
   updateMusicPreference();
-  if (preferredMusic && !pilotLocked() && !$("pilotMusic").hidden) {
+  if (preferredMusic && !savedOpening && !pilotLocked() && !$("pilotMusic").hidden) {
     const link = $(preferredMusic);
     link.focus({preventScroll:true});
   }
@@ -1250,6 +1267,8 @@ function closeDoor() {
   cancelPilotAnimation();stopEmbeddedMusic();imageReady=false;
   $("riddlePilot").classList.remove("riddle-opening","riddle-entering");
   $("riddlePilot").inert=false;
+  $("pilotStage").classList.remove("saved-opening","saved-entering");
+  $("pilotStage").inert=false;
   $("overlay").classList.remove("visible");
   document.body.style.overflow = "";
 }
