@@ -626,6 +626,10 @@ header h1 span {min-width:0}
  .panel:not(.finale) .scene::before{top:-34px}
  .panel:not(.finale) .scene::after{bottom:-34px}
 }
+/* 06.2.0.61 – retain player dimensions while APIs initialize */
+#embeddedMusic .music-api-host{width:100%;position:relative}
+#embeddedMusic .music-api-host.spotify-frame{height:82px}
+#embeddedMusic .music-api-host.youtube-frame iframe{height:100%;position:absolute;inset:0}
 </style>
 </head>
 <body>
@@ -814,9 +818,43 @@ const musicTracks = {
   24:{spotify:"6qdnFE7DmhNyXOuDKhtA0X",youtube:"-hH1kTj6vws"}
 };
 let musicTimer=null, musicTransitionTimer=null, imageReady=false;
+// 06.2.0.61 – provider API playback, scoped to the current door.
+let musicSession=null;
+let spotifyApiPromise=null,youtubeApiPromise=null;
+function musicApi(service){
+  if(service==="spotify"){
+    if(!spotifyApiPromise)spotifyApiPromise=new Promise(resolve=>{
+      window.onSpotifyIframeApiReady=resolve;
+      const script=document.createElement("script");script.src="https://open.spotify.com/embed/iframe-api/v1";script.async=true;script.onerror=()=>resolve(null);document.head.appendChild(script);
+      setTimeout(()=>resolve(null),8000);
+    });
+    return spotifyApiPromise;
+  }
+  if(!youtubeApiPromise)youtubeApiPromise=new Promise(resolve=>{
+    if(window.YT&&window.YT.Player){resolve(window.YT);return;}
+    window.onYouTubeIframeAPIReady=()=>resolve(window.YT);
+    const script=document.createElement("script");script.src="https://www.youtube.com/iframe_api";script.async=true;script.onerror=()=>resolve(null);document.head.appendChild(script);
+    setTimeout(()=>resolve(null),8000);
+  });
+  return youtubeApiPromise;
+}
+function musicAlive(session){return musicSession===session&&$("overlay").classList.contains("visible");}
+function musicStatus(session,playing){
+  if(musicAlive(session))session.note.textContent=playing?"Genieße unsere heutige Melodie. ♡":"Tippe auf Play und genieße unsere Melodie.";
+}
+function startEmbeddedPlayback(){
+  const session=musicSession;
+  if(!session||!musicAlive(session))return;
+  session.requested=true;
+  if(pilotAnimating||magicSoundBus||pilotLocked()||session.started||!session.controller||!session.ready)return;
+  session.started=true;
+  try{if(session.service==="spotify")session.controller.play();else session.controller.playVideo();}catch(e){musicStatus(session,false);}
+}
 function stopEmbeddedMusic(){
   clearTimeout(musicTimer);musicTimer=null;
   clearTimeout(musicTransitionTimer);musicTransitionTimer=null;
+  const previous=musicSession;musicSession=null;
+  if(previous&&previous.controller){try{previous.controller.destroy();}catch(e){}}
   $("embeddedMusic").replaceChildren();
 }
 function showEmbeddedMusic(preparingMobile=false){
@@ -824,7 +862,6 @@ function showEmbeddedMusic(preparingMobile=false){
   if(!imageReady || !$("overlay").classList.contains("visible") || (pilotLocked()&&!preparingMobile))return;
   const service=pilotChoosing?"":preferredMusic||"spotify";
   if(!service)return;
-  // 06.2.0.50: wait for the original magic sound to finish before mounting audio.
   if(magicSoundBus){
     const door=current;
     musicTransitionTimer=setTimeout(()=>{if(current===door)showEmbeddedMusic(preparingMobile);},100);
@@ -832,15 +869,40 @@ function showEmbeddedMusic(preparingMobile=false){
   }
   const id=musicTracks[current+1]?.[service];
   if(!id){$("embeddedMusic").textContent="Für diesen Song wird der direkte Player-Link noch ergänzt. Du kannst ihn bereits extern öffnen.";return;}
-  const frame=document.createElement("iframe");
-  frame.title=playlist[current].join(" – ");
-  frame.allow="autoplay; encrypted-media; fullscreen; picture-in-picture";
-  frame.allowFullscreen=true;
-  frame.referrerPolicy="strict-origin-when-cross-origin";
-  frame.src=service==="spotify"?"https://open.spotify.com/embed/track/"+id+"?utm_source=generator":"https://www.youtube-nocookie.com/embed/"+id+"?autoplay=1&playsinline=1&rel=0";
-  frame.className=service==="spotify"?"spotify-frame":"youtube-frame";
-  $("embeddedMusic").appendChild(frame);
-  const note=document.createElement("p");note.textContent="Tippe auf Play und genieße unsere Melodie.";$("embeddedMusic").appendChild(note);
+  const host=document.createElement("div");host.className="music-api-host "+(service==="spotify"?"spotify-frame":"youtube-frame");
+  const note=document.createElement("p");note.textContent="Tippe auf Play und genieße unsere Melodie.";
+  $("embeddedMusic").append(host,note);
+  const session={service,note,controller:null,ready:false,requested:!preparingMobile,started:false};
+  musicSession=session;
+  function fallback(){
+    if(!musicAlive(session))return;
+    const frame=document.createElement("iframe");frame.title=playlist[current].join(" – ");frame.allow="autoplay; encrypted-media; fullscreen; picture-in-picture";frame.allowFullscreen=true;frame.referrerPolicy="strict-origin-when-cross-origin";
+    frame.className=service==="spotify"?"spotify-frame":"youtube-frame";
+    frame.src=service==="spotify"?"https://open.spotify.com/embed/track/"+id+"?utm_source=generator":"https://www.youtube-nocookie.com/embed/"+id+"?autoplay="+(session.requested&&!pilotAnimating?1:0)+"&playsinline=1&rel=0";
+    host.replaceChildren(frame);
+  }
+  musicApi(service).then(api=>{
+    if(!musicAlive(session))return;
+    if(!api){fallback();return;}
+    try{
+      const target=document.createElement("div");host.appendChild(target);
+      if(service==="spotify"){
+        api.createController(target,{width:"100%",height:82,uri:"spotify:track:"+id},controller=>{
+          if(!musicAlive(session)){try{controller.destroy();}catch(e){}return;}
+          session.controller=controller;
+          controller.addListener("ready",()=>{session.ready=true;if(session.requested)startEmbeddedPlayback();});
+          controller.addListener("playback_update",event=>musicStatus(session,event.data&&!event.data.isPaused&&!event.data.isBuffering));
+        });
+      }else{
+        session.controller=new api.Player(target,{width:"100%",height:"100%",videoId:id,host:"https://www.youtube-nocookie.com",playerVars:{autoplay:0,playsinline:1,rel:0,origin:location.origin},events:{
+          onReady:event=>{if(!musicAlive(session))return;session.controller=event.target;session.ready=true;if(session.requested)startEmbeddedPlayback();},
+          onStateChange:event=>musicStatus(session,event.data===1),
+          onAutoplayBlocked:()=>musicStatus(session,false),
+          onError:()=>musicStatus(session,false)
+        }});
+      }
+    }catch(e){fallback();}
+  });
   revealSong();
 }
 function updateMusicPreference() {
@@ -1040,7 +1102,7 @@ $("pilotReveal").addEventListener("click",()=>{
   const mode=pilotMode();pilotSolved[mode].add(current);
   try {localStorage.setItem(pilotKey(mode,current),"1");}catch(e){}
   let desktopSpotifyPrepared=false;
-  const finish=()=>{document.body.classList.remove("pilot-snow-paused");pilotAnimating=false;$("pilotMusic").hidden=false;$("pilotMusic").classList.remove("pilot-preparing");$("nextDoor").disabled=current!==23&&!available(current+2);if(desktopSpotifyPrepared){revealSong();}else{showEmbeddedMusic();}};
+  const finish=()=>{document.body.classList.remove("pilot-snow-paused");pilotAnimating=false;$("pilotMusic").hidden=false;$("pilotMusic").classList.remove("pilot-preparing");$("nextDoor").disabled=current!==23&&!available(current+2);if(desktopSpotifyPrepared){revealSong();startEmbeddedPlayback();}else{showEmbeddedMusic();}};
   if(window.matchMedia("(prefers-reduced-motion: reduce)").matches){renderPilot();finish();return;}
   const overlay=$("overlay");
   if(document.activeElement instanceof HTMLElement)document.activeElement.blur();
@@ -1060,7 +1122,7 @@ $("pilotReveal").addEventListener("click",()=>{
     // Mount Spotify once, while hidden, before measuring the final layout.
     if(!pilotChoosing&&(preferredMusic||"spotify")==="spotify"&&musicTracks[current+1]?.spotify){
       showEmbeddedMusic(true);
-      desktopSpotifyPrepared=!!$("embeddedMusic").querySelector("iframe.spotify-frame");
+      desktopSpotifyPrepared=!!musicSession;
     }
     const last=stage.getBoundingClientRect();
     if(typeof stage.animate==="function"&&last.height>0){
@@ -1393,7 +1455,7 @@ function revealSong() {
   $("reveal").classList.add("visible");
 }
 
-document.querySelectorAll("#musicChoices button").forEach(button=>button.addEventListener("click",()=>{if(!imageReady||pilotLocked()||pilotAnimating)return;if(!pilotChoosing&&(preferredMusic||"spotify")===button.dataset.service&&$("embeddedMusic").querySelector("iframe"))return;pilotChoosing=false;rememberMusic(button.dataset.service);if(imageReady)showEmbeddedMusic();}));
+document.querySelectorAll("#musicChoices button").forEach(button=>button.addEventListener("click",()=>{if(!imageReady||pilotLocked()||pilotAnimating)return;if(!pilotChoosing&&(preferredMusic||"spotify")===button.dataset.service&&musicSession)return;pilotChoosing=false;rememberMusic(button.dataset.service);if(imageReady)showEmbeddedMusic();}));
 ["spotify","youtube"].forEach(service => {
   $(service).addEventListener("click", () => { stopMagicSound(); revealSong(); });
 });
