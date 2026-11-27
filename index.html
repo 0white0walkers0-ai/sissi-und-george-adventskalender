@@ -427,6 +427,9 @@ body.welcome .door { animation:welcome-in .65s ease both; animation-delay:calc(2
 #pilotStage {display:contents}
 #pilotStage.pilot-active {display:flow-root;overflow-anchor:none}
 #pilotStage.pilot-expanding {overflow:hidden;transform-origin:top center;will-change:transform}
+#pilotStage.pilot-height-expanding {box-sizing:border-box;will-change:auto}
+.overlay.pilot-desktop-stable {overflow-anchor:none;scroll-behavior:auto}
+#pilotStage.pilot-height-expanding #riddlePilot {opacity:0}
 body.pilot-snow-paused .snowflake {animation-play-state:paused!important}
 #pilotStage.pilot-active #embeddedMusic.pilot-spotify-slot {box-sizing:border-box}
 #pilotStage.pilot-expanding .pilot-ornament {opacity:0}
@@ -843,7 +846,7 @@ const pilotMode=()=>preview?"preview":"christmas";
 const pilotLocked=()=>!pilotSolved[pilotMode()].has(current)||pilotAnimating;
 let pilotHintCount=0, pilotAnimating=false, pilotTimers=[], pilotChoosing=false;
 let pilotExpansion=null, pilotNavigationMotion=null;
-function cancelPilotAnimation(){pilotTimers.forEach(clearTimeout);pilotTimers=[];pilotAnimating=false;if(pilotExpansion){pilotExpansion.cancel();pilotExpansion=null;}if(pilotNavigationMotion){pilotNavigationMotion.cancel();pilotNavigationMotion=null;}document.body.classList.remove("pilot-snow-paused");$("overlay").classList.remove("pilot-mobile-stable");$("riddlePilot").classList.remove("mobile-celebrating");$("pilotMusic").classList.remove("mobile-arriving");$("pilotStage").classList.remove("pilot-expanding");$("riddlePilot").classList.remove("departing","celebrating");$("pilotMusic").classList.remove("pilot-arriving","pilot-preparing");}
+function cancelPilotAnimation(){pilotTimers.forEach(clearTimeout);pilotTimers=[];pilotAnimating=false;if(pilotExpansion){pilotExpansion.cancel();pilotExpansion=null;}if(pilotNavigationMotion){pilotNavigationMotion.cancel();pilotNavigationMotion=null;}document.body.classList.remove("pilot-snow-paused");$("overlay").classList.remove("pilot-mobile-stable");$("riddlePilot").classList.remove("mobile-celebrating");$("pilotMusic").classList.remove("mobile-arriving");$("pilotStage").classList.remove("pilot-expanding","pilot-height-expanding");$("overlay").classList.remove("pilot-desktop-stable");$("riddlePilot").classList.remove("departing","celebrating");$("pilotMusic").classList.remove("pilot-arriving","pilot-preparing");}
 function pilotLater(fn,ms){pilotTimers.push(setTimeout(fn,ms));}
 function renderPilot(){
   const active=true, solved=!pilotLocked();
@@ -912,23 +915,19 @@ $("pilotReveal").addEventListener("click",()=>{
       return;
     }
     const first=stage.getBoundingClientRect();
-    const nav=document.querySelector(".panel .navigation");
-    const navFirst=nav?.getBoundingClientRect();
-    stage.classList.add("pilot-expanding");
+    overlay.classList.add("pilot-desktop-stable");
+    stage.classList.add("pilot-expanding","pilot-height-expanding");
     $("riddlePilot").classList.remove("departing");
     $("riddlePilot").classList.add("celebrating");
     pilotAnimating=false;renderPilot();pilotAnimating=true;
     $("pilotMusic").classList.add("pilot-preparing");
     $("pilotMusic").hidden=false;
     const last=stage.getBoundingClientRect();
-    const navLast=nav?.getBoundingClientRect();
     if(typeof stage.animate==="function"&&last.height>0){
-      const timing={duration:600,easing:"cubic-bezier(.22,.61,.36,1)",fill:"both"};
-      const dy=first.top-last.top;
-      pilotExpansion=stage.animate([{transform:"translateY("+dy+"px) scaleY("+Math.max(.05,first.height/last.height)+")"},{transform:"none"}],timing);
-      if(navFirst&&navLast)pilotNavigationMotion=nav.animate([{transform:"translateY("+(navFirst.top-navLast.top)+"px)"},{transform:"none"}],timing);
-      pilotExpansion.onfinish=()=>{if(pilotExpansion){pilotExpansion.cancel();pilotExpansion=null;}if(pilotNavigationMotion){pilotNavigationMotion.cancel();pilotNavigationMotion=null;}stage.classList.remove("pilot-expanding");};
-    }else stage.classList.remove("pilot-expanding");
+      const timing={duration:900,easing:"cubic-bezier(.22,.61,.36,1)",fill:"both"};
+      pilotExpansion=stage.animate([{height:first.height+"px"},{height:last.height+"px"}],timing);
+      pilotExpansion.onfinish=()=>{if(pilotExpansion){pilotExpansion.cancel();pilotExpansion=null;}stage.classList.remove("pilot-expanding","pilot-height-expanding");};
+    }else stage.classList.remove("pilot-expanding","pilot-height-expanding");
   },mobile?220:400);
   pilotLater(()=>{
     for(let k=0;k<(current===23?42:24);k++){
@@ -946,7 +945,7 @@ $("pilotReveal").addEventListener("click",()=>{
       $("pilotAnswer").appendChild(rain);
       pilotLater(()=>rain.remove(),6000);
     }
-  },mobile?800:1150);
+  },mobile?800:1450);
   if(mobile){
     pilotLater(()=>{
       mobileAnchor=$("riddlePilot").getBoundingClientRect().top;
