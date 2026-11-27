@@ -579,6 +579,17 @@ header h1 span {min-width:0}
 @media(max-width:340px){
  #riddlePilot.solved + #pilotMusic .external-music-links{grid-template-columns:1fr}
 }
+
+/* 06.2.0.55 – centered icon-only external music links */
+#riddlePilot.solved + #pilotMusic .external-music-links{display:flex;justify-content:center;align-items:center;gap:16px;margin:8px auto 0}
+#pilotMusic .external-music-links a.music{flex:0 0 58px;width:58px;height:58px;min-height:58px;padding:0;border:1px solid #dfb97988;border-radius:14px;background:#193c33;justify-content:center;align-items:center}
+#pilotMusic .external-music-links a.music svg{width:32px;height:32px}
+#pilotMusic .external-music-links a.music:hover,#pilotMusic .external-music-links a.music:active{border-color:#f4d18a;background:#315447;box-shadow:0 0 12px #dfb97944}
+@media(max-width:600px){
+ #riddlePilot.solved + #pilotMusic .external-music-links{gap:14px;margin:6px auto 0}
+ #pilotMusic .external-music-links a.music{flex-basis:54px;width:54px;height:54px;min-height:54px}
+ #pilotMusic .external-music-links a.music svg{width:30px;height:30px}
+}
 </style>
 </head>
 <body>
@@ -654,12 +665,12 @@ setTimeout(()=>document.body.classList.remove("welcome"),5000);
     <p class="external-music-caption">Ganze Melodie im Musikdienst hören</p>
     <div class="music-links external-music-links">
       <a id="spotify" class="music spotify"
-         target="_blank" rel="noopener noreferrer">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="#1ed760"/><path d="M5.5 9Q12 6 18.5 10M6.5 12.5Q12 10 17.5 13.5M8 16Q12 14 16 16.5" fill="none" stroke="#12382a" stroke-width="1.7" stroke-linecap="round"/></svg> Spotify
+         target="_blank" rel="noopener noreferrer" aria-label="Spotify extern öffnen" title="Spotify extern öffnen">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="#1ed760"/><path d="M5.5 9Q12 6 18.5 10M6.5 12.5Q12 10 17.5 13.5M8 16Q12 14 16 16.5" fill="none" stroke="#12382a" stroke-width="1.7" stroke-linecap="round"/></svg>
       </a>
       <a id="youtube" class="music youtube"
-         target="_blank" rel="noopener noreferrer">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="1" y="4" width="22" height="16" rx="5" fill="#ff0033"/><path d="M10 8L16 12L10 16Z" fill="white"/></svg> YouTube
+         target="_blank" rel="noopener noreferrer" aria-label="YouTube extern öffnen" title="YouTube extern öffnen">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="1" y="4" width="22" height="16" rx="5" fill="#ff0033"/><path d="M10 8L16 12L10 16Z" fill="white"/></svg>
       </a>
     </div>
 
@@ -804,8 +815,8 @@ function updateMusicPreference() {
   $("embeddedMusic").classList.toggle("pilot-spotify-slot",pilot&&service==="spotify");
   $("musicChoices").hidden=false;
   document.querySelectorAll("#musicChoices button").forEach(button=>button.setAttribute("aria-pressed",String(button.dataset.service===service)));
-  $("spotify").lastChild.textContent=" Spotify öffnen ↗";
-  $("youtube").lastChild.textContent=" YouTube öffnen ↗";
+  
+  
   $("musicPreference").textContent = pilot?(service?"":"Wähle deinen Musikdienst."):service ? "Bevorzugter Musikdienst: " + (service === "spotify" ? "Spotify" : "YouTube") : "Wähle deinen Musikdienst.";
   $("forgetMusic").hidden = true;
   $("forgetMusic").textContent=service?"Musikdienst ändern · "+(service==="spotify"?"Spotify":"YouTube"):"Musikdienst ändern";
