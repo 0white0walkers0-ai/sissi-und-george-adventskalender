@@ -462,6 +462,15 @@ header h1 span {min-width:0}
 .riddle-invitation p {margin:6px 0;font-size:clamp(14px,2vw,16px)}
 .riddle-invitation em {color:var(--gold)}
 @media(max-width:600px) {header h1 {font-size:clamp(21px,5.5vw,30px);gap:8px} .riddle-invitation {margin:14px auto 20px;padding:0 8px}}
+@media (min-width:1024px) and (hover:hover) and (pointer:fine) {
+  header .hero-title {font-size:36px;line-height:1.18;max-width:760px;margin:18px auto 12px}
+  header .hero-intro {font-size:18px;line-height:1.6;max-width:760px;margin:12px auto 20px}
+  header .riddle-invitation {max-width:760px;margin:22px auto 28px}
+  header .riddle-invitation::before {content:"✧ ───── ♡ ───── ✧";font-size:22px;margin:0 auto 14px}
+  header .riddle-invitation h2 {font-size:30px;line-height:1.2;margin:0 auto 12px}
+  header .riddle-invitation p {font-size:19px;line-height:1.5;margin:8px auto 0}
+  header .desktop-text-line {display:block}
+}
 #pilotAnswer.pilot-finale svg {width:124px;max-width:55%}
 #pilotAnswer.pilot-finale .pilot-reaction {font-size:26px}
 </style>
@@ -492,9 +501,9 @@ setTimeout(()=>document.body.classList.remove("welcome"),5000);
   <h1><svg class="name-heart" viewBox="0 0 40 40" aria-hidden="true" focusable="false"><path d="M20 32 C16 28 5 21 5 13 C5 4 16 3 20 11 C24 3 35 4 35 13 C35 21 24 28 20 32Z" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M20 26 C16 23 10 18 10 13 C10 8 16 8 20 16 C24 8 30 8 30 13 C30 18 24 23 20 26Z" fill="currentColor" opacity=".7"/></svg><span>Unser Adventskalender</span><svg class="name-heart" viewBox="0 0 40 40" aria-hidden="true" focusable="false"><path d="M20 32 C16 28 5 21 5 13 C5 4 16 3 20 11 C24 3 35 4 35 13 C35 21 24 28 20 32Z" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M20 26 C16 23 10 18 10 13 C10 8 16 8 20 16 C24 8 30 8 30 13 C30 18 24 23 20 26Z" fill="currentColor" opacity=".7"/></svg></h1>
   <p class="hero-year">Sissi &amp; George <span aria-hidden="true">·</span> 2026</p>
   <img class="hero-photo" src="Bilder/Titelbild.png" alt="Sissi und George halten sich in einem goldenen Herzen an der Hand" width="1402" height="1122" fetchpriority="high" loading="eager" onerror="this.classList.remove('hero-loaded')" onload="this.classList.add('hero-loaded')">
-  <h2 class="hero-title">24 Türchen voller Herzklopfen, Gänsehaut und unvergesslicher Momente.</h2>
-  <p class="hero-intro">Jede Erinnerung ist ein kleiner Schatz, jede Geschichte der Schlüssel zu einem musikalischen Geheimnis.</p>
-  <section class="riddle-invitation"><h2>Folge den Spuren unserer Liebe und entdecke ihre verborgenen Melodien.</h2><p><em>Bist du bereit für unser kleines Abenteuer, mein Schnuffel?</em></p></section>
+  <h2 class="hero-title"><span class="desktop-text-line">24 Türchen voller Herzklopfen,</span> <span class="desktop-text-line">Gänsehaut und unvergesslicher Momente.</span></h2>
+  <p class="hero-intro"><span class="desktop-text-line">Jede Erinnerung ist ein kleiner Schatz,</span> <span class="desktop-text-line">jede Geschichte der Schlüssel zu einem musikalischen Geheimnis.</span></p>
+  <section class="riddle-invitation"><h2><span class="desktop-text-line">Folge den Spuren unserer Liebe</span> <span class="desktop-text-line">und entdecke ihre verborgenen Melodien.</span></h2><p><em>Bist du bereit für unser kleines Abenteuer, mein Schnuffel?</em></p></section>
 </header>
 
 <div class="controls">
