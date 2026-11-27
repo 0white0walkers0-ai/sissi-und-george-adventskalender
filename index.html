@@ -697,9 +697,10 @@ const musicTracks = {
   23:{spotify:"6e7N7cQ8MuPtu3FweRQYJz",youtube:"Qz9RTOKpLsM"},
   24:{spotify:"6qdnFE7DmhNyXOuDKhtA0X",youtube:"-hH1kTj6vws"}
 };
-let musicTimer=null, imageReady=false;
+let musicTimer=null, musicTransitionTimer=null, imageReady=false;
 function stopEmbeddedMusic(){
   clearTimeout(musicTimer);musicTimer=null;
+  clearTimeout(musicTransitionTimer);musicTransitionTimer=null;
   $("embeddedMusic").replaceChildren();
 }
 function showEmbeddedMusic(preparingMobile=false){
@@ -707,6 +708,12 @@ function showEmbeddedMusic(preparingMobile=false){
   if(!imageReady || !$("overlay").classList.contains("visible") || (pilotLocked()&&!preparingMobile))return;
   const service=pilotChoosing?"":preferredMusic||"spotify";
   if(!service)return;
+  // 06.2.0.50: wait for the original magic sound to finish before mounting audio.
+  if(magicSoundBus){
+    const door=current;
+    musicTransitionTimer=setTimeout(()=>{if(current===door)showEmbeddedMusic(preparingMobile);},100);
+    return;
+  }
   const id=musicTracks[current+1]?.[service];
   if(!id){$("embeddedMusic").textContent="Für diesen Song wird der direkte Player-Link noch ergänzt. Du kannst ihn bereits extern öffnen.";return;}
   const frame=document.createElement("iframe");
@@ -1028,7 +1035,10 @@ function playMagicSound(){
       [523.25,659.25,783.99,987.77].forEach((hz,j)=>{tone(hz,1.92+j*.045,.95-j*.045,.10,"sine",.06);tone(hz*2,1.92+j*.045,.65,.025);});
       setTimeout(()=>{if(magicSoundBus===bus)magicSoundBus=null;try{bus.disconnect();}catch(e){}},3100);
     };
-    if(c.state==="running")start();else c.resume().then(start).catch(()=>stopMagicSound());
+    if(c.state==="running")start();else {
+      const resumeTimeout=setTimeout(()=>{if(magicSoundBus===bus)stopMagicSound();},600);
+      c.resume().then(()=>{clearTimeout(resumeTimeout);start();}).catch(()=>{clearTimeout(resumeTimeout);if(magicSoundBus===bus)stopMagicSound();});
+    }
   }catch(e){stopMagicSound();}
 }
 const magicToggle=document.createElement("button");
@@ -1267,7 +1277,7 @@ function revealSong() {
 
 document.querySelectorAll("#musicChoices button").forEach(button=>button.addEventListener("click",()=>{pilotChoosing=false;rememberMusic(button.dataset.service);if(imageReady)showEmbeddedMusic();}));
 ["spotify","youtube"].forEach(service => {
-  $(service).addEventListener("click", () => { revealSong(); });
+  $(service).addEventListener("click", () => { stopMagicSound(); revealSong(); });
 });
 $("forgetMusic").addEventListener("click", () => {
   stopEmbeddedMusic();
