@@ -541,6 +541,17 @@ header h1 span {min-width:0}
 #riddlePilot.solved + #pilotMusic .music-links{margin:6px 0 4px}
 #pilotMusic #forgetMusic{min-height:44px;padding:6px 12px;border-color:transparent;background:transparent;color:#d9c49b;font-size:12px}
 #pilotMusic #forgetMusic:hover{background:#193c33;border-color:#dfb97966;color:#f4d18a}
+
+/* 06.2.0.53 – direct player selection and separate external links */
+#musicChoices button{background:transparent;border-color:#dfb97955}
+#musicChoices button[aria-pressed="true"]{background:#244c3d;border-color:#dfb979}
+#musicChoices button svg{width:20px;height:20px;flex-shrink:0}
+#musicChoices .service-check{visibility:hidden}
+#musicChoices button[aria-pressed="true"] .service-check{visibility:visible}
+#pilotMusic #forgetMusic[hidden]{display:none!important}
+#pilotMusic .external-music-caption{display:flex;align-items:center;justify-content:center;gap:10px;font-size:12px;color:#d9c49b;margin:10px 0 4px}
+#pilotMusic .external-music-caption::before,#pilotMusic .external-music-caption::after{content:"";height:1px;background:#dfb97944;flex:1}
+#pilotMusic #embeddedMusic p{font-style:italic}
 </style>
 </head>
 <body>
@@ -611,9 +622,10 @@ setTimeout(()=>document.body.classList.remove("welcome"),5000);
     <h3 class="music-heading">Eine Melodie für diesen Moment</h3>
     <p id="pilotListening" hidden>Lass uns unsere Melodie hören.</p>
 
-    <div id="musicChoices" class="music-links"><button type="button" data-service="spotify">Spotify als Player</button><button type="button" data-service="youtube">YouTube als Player</button></div>
+    <div id="musicChoices" class="music-links" role="group" aria-label="Integrierten Musikplayer auswählen"><button type="button" data-service="spotify" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="#1ed760"/><path d="M5.5 9Q12 6 18.5 10M6.5 12.5Q12 10 17.5 13.5M8 16Q12 14 16 16.5" fill="none" stroke="#12382a" stroke-width="1.7" stroke-linecap="round"/></svg><span>Spotify</span><span class="service-check" aria-hidden="true">✓</span></button><button type="button" data-service="youtube" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="1" y="4" width="22" height="16" rx="5" fill="#ff0033"/><path d="M10 8L16 12L10 16Z" fill="white"/></svg><span>YouTube</span><span class="service-check" aria-hidden="true">✓</span></button></div>
     <div id="embeddedMusic" aria-live="polite"></div>
-    <div class="music-links">
+    <p class="external-music-caption">Ganze Melodie im Musikdienst hören</p>
+    <div class="music-links external-music-links">
       <a id="spotify" class="music spotify"
          target="_blank" rel="noopener noreferrer">
         <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="#1ed760"/><path d="M5.5 9Q12 6 18.5 10M6.5 12.5Q12 10 17.5 13.5M8 16Q12 14 16 16.5" fill="none" stroke="#12382a" stroke-width="1.7" stroke-linecap="round"/></svg> Spotify
@@ -754,7 +766,7 @@ function showEmbeddedMusic(preparingMobile=false){
   frame.src=service==="spotify"?"https://open.spotify.com/embed/track/"+id+"?utm_source=generator":"https://www.youtube-nocookie.com/embed/"+id+"?autoplay=1&playsinline=1&rel=0";
   frame.className=service==="spotify"?"spotify-frame":"youtube-frame";
   $("embeddedMusic").appendChild(frame);
-  const note=document.createElement("p");note.textContent="Falls nötig, drücke Play im Player.";$("embeddedMusic").appendChild(note);
+  const note=document.createElement("p");note.textContent="Tippe auf Play und genieße unsere Melodie.";$("embeddedMusic").appendChild(note);
   revealSong();
 }
 function updateMusicPreference() {
@@ -763,11 +775,12 @@ function updateMusicPreference() {
   $("pilotListening").hidden=!pilot;
   $("pilotStage").classList.toggle("pilot-active",pilot);
   $("embeddedMusic").classList.toggle("pilot-spotify-slot",pilot&&service==="spotify");
-  $("musicChoices").hidden=!!service;
-  $("spotify").lastChild.textContent=pilot?" In Spotify öffnen":" Spotify";
-  $("youtube").lastChild.textContent=pilot?" YouTube öffnen":" YouTube";
+  $("musicChoices").hidden=false;
+  document.querySelectorAll("#musicChoices button").forEach(button=>button.setAttribute("aria-pressed",String(button.dataset.service===service)));
+  $("spotify").lastChild.textContent=" Spotify öffnen ↗";
+  $("youtube").lastChild.textContent=" YouTube öffnen ↗";
   $("musicPreference").textContent = pilot?(service?"":"Wähle deinen Musikdienst."):service ? "Bevorzugter Musikdienst: " + (service === "spotify" ? "Spotify" : "YouTube") : "Wähle deinen Musikdienst.";
-  $("forgetMusic").hidden = !service;
+  $("forgetMusic").hidden = true;
   $("forgetMusic").textContent=service?"Musikdienst ändern · "+(service==="spotify"?"Spotify":"YouTube"):"Musikdienst ändern";
 }
 function rememberMusic(service) {
@@ -1306,7 +1319,7 @@ function revealSong() {
   $("reveal").classList.add("visible");
 }
 
-document.querySelectorAll("#musicChoices button").forEach(button=>button.addEventListener("click",()=>{pilotChoosing=false;rememberMusic(button.dataset.service);if(imageReady)showEmbeddedMusic();}));
+document.querySelectorAll("#musicChoices button").forEach(button=>button.addEventListener("click",()=>{if(!imageReady||pilotLocked()||pilotAnimating)return;if(!pilotChoosing&&(preferredMusic||"spotify")===button.dataset.service&&$("embeddedMusic").querySelector("iframe"))return;pilotChoosing=false;rememberMusic(button.dataset.service);if(imageReady)showEmbeddedMusic();}));
 ["spotify","youtube"].forEach(service => {
   $(service).addEventListener("click", () => { stopMagicSound(); revealSong(); });
 });
