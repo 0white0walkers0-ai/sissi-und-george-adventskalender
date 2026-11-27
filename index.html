@@ -626,6 +626,10 @@ header h1 span {min-width:0}
  .panel:not(.finale) .scene::before{top:-34px}
  .panel:not(.finale) .scene::after{bottom:-34px}
 }
+/* 06.2.0.62 – direct gesture fallback on Apple mobile devices */
+#embeddedMusic .mobile-music-retry{display:block;margin:4px auto;padding:4px 12px;min-height:44px;color:#f4d18a;background:#193c33;border:1px solid #dfb979;border-radius:10px;font:inherit;font-size:12px}
+#embeddedMusic .mobile-music-retry[hidden]{display:none}
+#embeddedMusic.pilot-spotify-slot:has(.mobile-music-retry:not([hidden])){height:auto!important;max-height:none!important}
 /* 06.2.0.61 – retain player dimensions while APIs initialize */
 #embeddedMusic .music-api-host{width:100%;position:relative}
 #embeddedMusic .music-api-host.spotify-frame{height:82px}
@@ -820,6 +824,9 @@ const musicTracks = {
 let musicTimer=null, musicTransitionTimer=null, imageReady=false;
 // 06.2.0.61 – provider API playback, scoped to the current door.
 let musicSession=null;
+// 06.2.0.62 – Apple mobile browsers: warm the preferred provider before reveal.
+const appleMobile=/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
+function warmMobileMusic(){if(appleMobile)musicApi(preferredMusic||"spotify");}
 let spotifyApiPromise=null,youtubeApiPromise=null;
 function musicApi(service){
   if(service==="spotify"){
@@ -840,7 +847,7 @@ function musicApi(service){
 }
 function musicAlive(session){return musicSession===session&&$("overlay").classList.contains("visible");}
 function musicStatus(session,playing){
-  if(musicAlive(session))session.note.textContent=playing?"Genieße unsere heutige Melodie. ♡":"Tippe auf Play und genieße unsere Melodie.";
+  if(musicAlive(session)){session.note.textContent=playing?"Genieße unsere heutige Melodie. ♡":"Tippe auf Play und genieße unsere Melodie.";if(session.retry)session.retry.hidden=playing;}
 }
 function startEmbeddedPlayback(){
   const session=musicSession;
@@ -848,6 +855,7 @@ function startEmbeddedPlayback(){
   session.requested=true;
   if(pilotAnimating||magicSoundBus||pilotLocked()||session.started||!session.controller||!session.ready)return;
   session.started=true;
+  if(session.retry)session.retry.hidden=false;
   try{if(session.service==="spotify")session.controller.play();else session.controller.playVideo();}catch(e){musicStatus(session,false);}
 }
 function stopEmbeddedMusic(){
@@ -874,12 +882,21 @@ function showEmbeddedMusic(preparingMobile=false){
   $("embeddedMusic").append(host,note);
   const session={service,note,controller:null,ready:false,requested:!preparingMobile,started:false};
   musicSession=session;
+  if(appleMobile){
+    const retry=document.createElement("button");retry.type="button";retry.className="mobile-music-retry";retry.textContent="Melodie starten";retry.hidden=true;
+    session.retry=retry;note.after(retry);
+    retry.addEventListener("click",()=>{
+      if(!musicAlive(session)||pilotAnimating||pilotLocked()||magicSoundBus)return;
+      if(session.ready&&session.controller){session.started=false;startEmbeddedPlayback();}
+    });
+  }
   function fallback(){
     if(!musicAlive(session))return;
     const frame=document.createElement("iframe");frame.title=playlist[current].join(" – ");frame.allow="autoplay; encrypted-media; fullscreen; picture-in-picture";frame.allowFullscreen=true;frame.referrerPolicy="strict-origin-when-cross-origin";
     frame.className=service==="spotify"?"spotify-frame":"youtube-frame";
     frame.src=service==="spotify"?"https://open.spotify.com/embed/track/"+id+"?utm_source=generator":"https://www.youtube-nocookie.com/embed/"+id+"?autoplay="+(session.requested&&!pilotAnimating?1:0)+"&playsinline=1&rel=0";
     host.replaceChildren(frame);
+    if(session.retry)session.retry.hidden=true;
   }
   musicApi(service).then(api=>{
     if(!musicAlive(session))return;
@@ -1099,6 +1116,7 @@ $("pilotHint").addEventListener("click",()=>{
 });
 $("pilotReveal").addEventListener("click",()=>{
   if(!imageReady||!pilotLocked()||pilotAnimating)return;
+  warmMobileMusic();
   const mode=pilotMode();pilotSolved[mode].add(current);
   try {localStorage.setItem(pilotKey(mode,current),"1");}catch(e){}
   let desktopSpotifyPrepared=false;
@@ -1120,7 +1138,7 @@ $("pilotReveal").addEventListener("click",()=>{
     $("pilotMusic").classList.add("pilot-preparing");
     $("pilotMusic").hidden=false;
     // Mount Spotify once, while hidden, before measuring the final layout.
-    if(!pilotChoosing&&(preferredMusic||"spotify")==="spotify"&&musicTracks[current+1]?.spotify){
+    if(!pilotChoosing&&((preferredMusic||"spotify")==="spotify"||appleMobile)&&musicTracks[current+1]?.[preferredMusic||"spotify"]){
       showEmbeddedMusic(true);
       desktopSpotifyPrepared=!!musicSession;
     }
@@ -1231,6 +1249,7 @@ function openDoor(i) {
   if (!available(i+1)) return;
   cancelPilotAnimation();stopEmbeddedMusic(); imageReady=false;
   current = i;
+  warmMobileMusic();
   const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const animateOpening=!reduced;
   stopMagicSound();if(animateOpening)playMagicSound();
