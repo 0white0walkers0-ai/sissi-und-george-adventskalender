@@ -994,15 +994,26 @@ function renderCalendar() {
 // 06.2.0.45: individual door audio
 let magicSoundEnabled=true;
 try{magicSoundEnabled=localStorage.getItem("magicSound")!=="off";}catch(e){}
-const magicAudio=new Audio();
-magicAudio.preload="auto";
-function stopMagicSound(){magicAudio.pause();try{magicAudio.currentTime=0;}catch(e){}}
+// 06.2.0.46: preload versioned individual sounds.
+const magicSounds=Array.from({length:24},(_,i)=>{
+  const audio=new Audio();
+  audio.preload="auto";
+  audio.src="magic_sounds/Tuerchen_"+String(i+1).padStart(2,"0")+".mp3?v=06.2.0.46";
+  audio.volume=1;
+  return audio;
+});
+let magicAudio=null;
+function stopMagicSound(){
+  if(!magicAudio)return;
+  magicAudio.pause();try{magicAudio.currentTime=0;}catch(e){}
+  magicAudio=null;
+}
 function playMagicSound(i){
   stopMagicSound();
   if(!magicSoundEnabled)return;
-  magicAudio.src="magic_sounds/Tuerchen_"+String(i+1).padStart(2,"0")+".mp3";
-  magicAudio.volume=1;
-  magicAudio.play().catch(()=>{});
+  const audio=magicSounds[i];if(!audio)return;
+  magicAudio=audio;
+  audio.play().catch(e=>console.warn("Magic sound playback",i+1,e));
 }
 const magicToggle=document.createElement("button");
 magicToggle.type="button";magicToggle.style.cssText="position:absolute;top:10px;left:10px;min-width:38px;height:38px;padding:0 9px;background:#f1d39a;color:#263b3a;border-radius:9px;z-index:45";
