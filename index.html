@@ -299,10 +299,10 @@ body.welcome .door { animation:welcome-in .65s ease both; animation-delay:calc(2
 .panel { background:radial-gradient(ellipse at top,#31534b,#153630 65%,#102b30); border:1px solid #dfb979; box-shadow:0 0 0 4px #dfb97922,0 18px 65px #0009; padding:30px 28px; }
 .panel h2 { font:600 clamp(24px,4vw,34px)/1.3 "Cormorant Garamond",Georgia,serif; margin:12px 38px 24px; }
 .panel h2::before,.panel h2::after { content:"♡"; color:#dfb979; font-size:.65em; margin:0 .55em; }
-.panel .scene { border:1px solid #dfb979; background:radial-gradient(ellipse at top,#d9b67530,transparent 80%); box-shadow:0 0 0 3px #dfb97922; }
-.panel .scene img { outline:1px solid #dfb979; outline-offset:2px; }
+.panel .scene { border:1px solid transparent; background:none; box-shadow:none; }
+.panel .scene img { outline:none!important; border:0; border-radius:clamp(20px,4vw,36px); box-shadow:-2px -3px 0 #e1eee580,2px 3px 0 #526b61,4px 6px 0 #304b41,6px 10px 0 #142e26,9px 16px 18px #0009,0 26px 44px #0007; }
 .panel .scene.curtain-open {border-color:transparent!important;box-shadow:none!important;background:none!important}
-.panel .scene.curtain-open img {outline:none!important;border-radius:clamp(12px,2.4vw,24px);box-shadow:0 2px 0 rgba(255,255,255,.24),0 4px 0 #152c29,0 7px 0 #0c211e,0 12px 22px #0007,0 22px 40px #0005}
+.panel .scene.curtain-open img {outline:none!important}
 .panel .scene.curtain-open::before,.panel .scene.curtain-open::after {content:none!important;display:none!important}
 .panel.opening-skipped .message {animation:none!important;opacity:1;transform:none}
 .panel .stage-ornament { display:none; }
