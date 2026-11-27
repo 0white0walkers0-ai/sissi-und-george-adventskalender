@@ -348,8 +348,15 @@ body.welcome .door { animation:welcome-in .65s ease both; animation-delay:calc(2
 .panel .corner-3 { bottom:-15px; left:-15px; animation-delay:5.75s; }
 @keyframes visible-corner-star { 0%,100% { opacity:0; transform:scale(.5); } 30%,55% { opacity:1; transform:scale(1.15); } }
 
-.panel .scene .living-frame { inset:0; transform:translateZ(90px); border:0; border-radius:15px; animation:inward-frame-glow 3.8s 2.8s ease-in-out both; }
-@keyframes inward-frame-glow { 0%,100% { box-shadow:inset 0 0 0 0 transparent; } 35%,65% { box-shadow:inset 0 0 12px 3px #ffe8a3bb,inset 0 0 35px 10px #ffc85c66,inset 0 0 65px 18px #eab64e22; } }
+.panel .scene .living-frame { inset:0; transform:translateZ(90px); border:0; border-radius:15px; overflow:hidden; opacity:1; animation:none; box-shadow:none; }
+.panel .scene .living-frame::before { content:""; position:absolute; inset:-35%; border-radius:50%; background:radial-gradient(ellipse at center,rgba(255,245,211,.55) 0%,rgba(255,225,164,.48) 35%,rgba(239,185,90,.32) 60%,rgba(239,185,90,0) 75%); opacity:0; transform:scale(.35); animation:champagne-wave 2.2s 1.3s ease-in-out both; }
+@keyframes champagne-wave { 0% { opacity:0; transform:scale(.35); } 27% { opacity:.78; transform:scale(.95); } 58% { opacity:.55; transform:scale(1.45); } 100% { opacity:0; transform:scale(2.4); } }
+.panel .scene .curtain.left { animation-duration:1.8s; animation-timing-function:cubic-bezier(.45,0,.25,1); }
+.panel .scene .curtain.right { animation-duration:1.8s; animation-timing-function:cubic-bezier(.45,0,.25,1); }
+.panel .scene .door-cover { animation-duration:1.8s; }
+.panel .scene img { animation-timing-function:cubic-bezier(.35,.05,.22,1); }
+@keyframes message-in { 0%,64.2857% { opacity:0; transform:translateY(5px); } 100% { opacity:1; transform:none; } }
+@media(prefers-reduced-motion:reduce) { .panel .scene .living-frame::before { animation:none; opacity:0; } }
 
 .overlay { touch-action:pan-y pinch-zoom; }
 @media(pointer:coarse) { .scene { touch-action:pan-y pinch-zoom; } }
@@ -1108,7 +1115,7 @@ function openDoor(i) {
       const angle=k*2.399, distance=65+(k%9)*12;
       spark.style.setProperty("--dx",Math.cos(angle)*distance+"px");
       spark.style.setProperty("--dy",Math.sin(angle)*distance+"px");
-      spark.style.animationDelay=(.45+k*.025)+"s";
+      spark.style.animationDelay=(1.1+k*.025)+"s";
       spark.style.fontSize=(9+k%5*3)+"px";
       scene.appendChild(spark);
       spark.addEventListener("animationend",()=>spark.remove(),{once:true});
@@ -1158,7 +1165,7 @@ function openDoor(i) {
     }else{riddle.inert=false;}
     showEmbeddedMusic();
   };
-  musicTimer=setTimeout(ready,reduced?0:2450);
+  musicTimer=setTimeout(ready,reduced?0:2800);
   document.body.style.overflow = "hidden";
   updateMusicPreference();
   if (preferredMusic && !pilotLocked() && !$("pilotMusic").hidden) {
