@@ -349,7 +349,8 @@ body.welcome .door { animation:welcome-in .65s ease both; animation-delay:calc(2
 @keyframes visible-corner-star { 0%,100% { opacity:0; transform:scale(.5); } 30%,55% { opacity:1; transform:scale(1.15); } }
 
 .panel .scene .living-frame { inset:0; transform:translateZ(90px); border:0; border-radius:15px; overflow:hidden; opacity:1; animation:none; box-shadow:none; }
-.panel .scene .living-frame {z-index:2;transform:translateZ(30px);animation:mist-envelope 3.5s linear both}
+.panel .scene .living-frame {z-index:2;transform:translateZ(30px);animation:mist-envelope 3.5s linear both;clip-path:inset(0 50%);animation-name:mist-envelope, mist-aperture;animation-duration:3.5s,1.4s;animation-timing-function:linear,cubic-bezier(.45,0,.25,1)}
+@keyframes mist-aperture {from{clip-path:inset(0 50%)}to{clip-path:inset(0 0)}}
 .panel .scene .door-cover {z-index:40;transform:translateZ(100px)}
 .panel .scene .living-frame .mist-puff {position:absolute;width:85%;height:65%;left:var(--x);top:var(--y);border-radius:50%;background:radial-gradient(ellipse at 42% 45%,rgba(255,244,218,.65),rgba(245,213,151,.42) 29%,rgba(215,169,94,.20) 49%,transparent 73%);opacity:0;animation:mist-drift calc(3.2s - var(--delay)) var(--delay) linear both}
 @keyframes mist-envelope {0%{opacity:1}90%{opacity:1}100%{opacity:0}}
@@ -357,8 +358,8 @@ body.welcome .door { animation:welcome-in .65s ease both; animation-delay:calc(2
 .panel .scene .living-frame .mist-glint {position:absolute;left:var(--x);top:var(--y);width:var(--size);height:var(--size);border-radius:50%;background:#ffe9b6;box-shadow:0 0 4px #ffe0a0;opacity:0;animation:mist-twinkle 1.3s var(--delay) ease-in-out both}
 .panel .scene .living-frame .mist-glint.mist-star {background:transparent;box-shadow:none;border-radius:0;color:#fff9e9;font-size:calc(var(--size)*3);line-height:1;text-shadow:0 0 5px #ffe5b1}
 @keyframes mist-twinkle {0%{opacity:0;transform:translate(0,0) scale(.5);animation-timing-function:cubic-bezier(.15,.7,.25,1)}18%{opacity:.95;transform:translate(calc(var(--mx)*.35),calc(var(--my)*.35)) scale(1)}45%{opacity:.65;transform:translate(calc(var(--mx)*.85),calc(var(--my)*.85)) scale(.85)}70%{opacity:.9;transform:translate(var(--mx),var(--my)) scale(.8)}100%{opacity:0;transform:translate(calc(var(--mx)*1.15),calc(var(--my)*1.15)) scale(.5)}}
-.panel .scene img {animation-duration:2.9s;animation-name:mist-image-reveal;animation-timing-function:linear}
-@keyframes mist-image-reveal {0%,65.5172%{opacity:0;transform:translateZ(25px) scale(1.10);animation-timing-function:ease-in-out}100%{opacity:1;transform:translateZ(25px) scale(1.10)}}
+.panel .scene img {animation-duration:3.3s;animation-name:mist-image-reveal;animation-timing-function:linear}
+@keyframes mist-image-reveal {0%,57.5758%{opacity:0;transform:translateZ(25px) scale(1.10);animation-timing-function:ease-in-out}78.7879%{opacity:1;transform:translateZ(25px) scale(1.10) rotateZ(-.65deg);animation-timing-function:ease-in-out}86%{opacity:1;transform:translateZ(25px) scale(1.10) rotateZ(.35deg);animation-timing-function:ease-in-out}93%{opacity:1;transform:translateZ(25px) scale(1.10) rotateZ(-.12deg);animation-timing-function:ease-in-out}100%{opacity:1;transform:translateZ(25px) scale(1.10) rotateZ(0deg)}}
 .panel .scene .curtain.left { animation-duration:1.4s; animation-timing-function:cubic-bezier(.45,0,.25,1); }
 .panel .scene .curtain.right { animation-duration:1.4s; animation-timing-function:cubic-bezier(.45,0,.25,1); }
 .panel .scene .door-cover { animation-duration:1.4s; }
@@ -1125,7 +1126,7 @@ function openDoor(i) {
       puff.style.setProperty("--mx",Math.cos(angle)*190+"px");
       puff.style.setProperty("--my",Math.sin(angle)*150+"px");
       puff.style.setProperty("--angle",(-28+(k%7)*9)+"deg");
-      puff.style.setProperty("--delay",(1.4+(k%4)*.035)+"s");
+      puff.style.setProperty("--delay",(.25+(k%4)*.045)+"s");
       frame.appendChild(puff);
     }
     const glints=mobileMist?60:120;
@@ -1137,11 +1138,11 @@ function openDoor(i) {
       glint.style.setProperty("--mx",Math.cos(angle)*260+"px");
       glint.style.setProperty("--my",Math.sin(angle)*200+"px");
       glint.style.setProperty("--size",(1+k%5*.45)+"px");
-      glint.style.setProperty("--delay",(1.4+(k%48)*.015)+"s");
+      glint.style.setProperty("--delay",(.3+(k%48)*.035)+"s");
       frame.appendChild(glint);
     }
     scene.appendChild(frame);
-    frame.addEventListener("animationend",e=>{if(e.target===frame)frame.remove();});
+    frame.addEventListener("animationend",e=>{if(e.target===frame&&e.animationName==="mist-envelope")frame.remove();});
     if(i===23){const rain=document.createElement("div");rain.className="finale-rain";rain.setAttribute("aria-hidden","true");for(let k=0;k<24;k++){const star=document.createElement("span");star.textContent=k%3?"·":"✦";star.style.left=(k*37%100)+"%";star.style.animationDelay=(2.5+k*.13)+"s";rain.appendChild(star);}scene.appendChild(rain);}
     for(let k=0;k<(mobileMist?(i===23?24:10):(i===23?42:18));k++){
       const spark=document.createElement("span");
