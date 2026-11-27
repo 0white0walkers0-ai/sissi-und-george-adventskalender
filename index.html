@@ -370,6 +370,10 @@ body.welcome .door { animation:welcome-in .65s ease both; animation-delay:calc(2
 .panel.finale .message-heart { display:block; width:2em; height:2em; margin:.6em auto 0; }
 /* Musical riddle pilot */
 #riddlePilot[hidden],#pilotMusic[hidden],#pilotHint[hidden],#pilotReveal[hidden],#pilotAnswer[hidden]{display:none!important}
+#riddlePilot.riddle-opening {opacity:0;visibility:hidden;pointer-events:none}
+#riddlePilot.riddle-entering {animation:riddle-entrance .9s ease-in-out both;pointer-events:none}
+@keyframes riddle-entrance {from{opacity:0}to{opacity:1}}
+@media(prefers-reduced-motion:reduce){#riddlePilot.riddle-entering{animation:none;pointer-events:auto}}
 #riddlePilot {position:relative;margin:20px auto;padding:18px;border:1px solid #dfb979;border-radius:12px;background:#102b26;color:#fff0d0}
 #riddlePilot h3 {margin:0 0 10px;color:var(--gold);font:600 26px "Cormorant Garamond",Georgia,serif}
 #pilotHints p {text-align:left;padding:12px;border:1px solid #dfb97944;border-radius:8px;line-height:1.6}
@@ -843,7 +847,7 @@ function cancelPilotAnimation(){pilotTimers.forEach(clearTimeout);pilotTimers=[]
 function pilotLater(fn,ms){pilotTimers.push(setTimeout(fn,ms));}
 function renderPilot(){
   const active=true, solved=!pilotLocked();
-  $("riddlePilot").hidden=!active||!imageReady;
+  $("riddlePilot").hidden=!active||(!imageReady&&solved);
   $("riddlePilot").classList.toggle("solved",solved);
   $("pilotQuestion").hidden=solved;
   $("pilotMusic").hidden=active&&(!imageReady||!solved);
@@ -996,7 +1000,12 @@ function openDoor(i) {
   cancelPilotAnimation();stopEmbeddedMusic(); imageReady=false;
   current = i;
   pilotChoosing=false;
-  pilotHintCount=0;$("pilotHints").replaceChildren();renderPilot();
+  pilotHintCount=0;$("pilotHints").replaceChildren();
+  const riddle=$("riddlePilot");
+  riddle.classList.remove("riddle-opening","riddle-entering");
+  riddle.classList.toggle("riddle-opening",pilotLocked());
+  riddle.inert=pilotLocked();
+  renderPilot();
   $("prevDoor").disabled = i===0 || !available(i);
   $("nextDoor").disabled = pilotLocked() || (i!==23 && !available(i+2));
   $("nextDoor").textContent = i===23 ? "Zum Adventskalender" : "Weiter →";
@@ -1127,7 +1136,16 @@ function openDoor(i) {
     "🎶 "+playlist[i][0]+" – "+playlist[i][1];
 
   $("overlay").classList.add("visible");
-  const ready=()=>{if(current!==i || !img.isConnected || !$("overlay").classList.contains("visible"))return;imageReady=true;renderPilot();showEmbeddedMusic();};
+  const ready=()=>{
+    if(current!==i || !img.isConnected || !$("overlay").classList.contains("visible"))return;
+    imageReady=true;renderPilot();
+    riddle.classList.remove("riddle-opening");
+    if(pilotLocked()&&!reduced){
+      riddle.classList.add("riddle-entering");
+      pilotLater(()=>{riddle.classList.remove("riddle-entering");riddle.inert=false;},900);
+    }else{riddle.inert=false;}
+    showEmbeddedMusic();
+  };
   musicTimer=setTimeout(ready,reduced?0:2450);
   document.body.style.overflow = "hidden";
   updateMusicPreference();
@@ -1157,6 +1175,8 @@ $("forgetMusic").addEventListener("click", () => {
 
 function closeDoor() {
   cancelPilotAnimation();stopEmbeddedMusic();imageReady=false;
+  $("riddlePilot").classList.remove("riddle-opening","riddle-entering");
+  $("riddlePilot").inert=false;
   $("overlay").classList.remove("visible");
   document.body.style.overflow = "";
 }
