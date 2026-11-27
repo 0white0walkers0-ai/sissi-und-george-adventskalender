@@ -366,9 +366,9 @@ body.welcome .door { animation:welcome-in .65s ease both; animation-delay:calc(2
 .panel .scene .living-frame.mist-positioned {visibility:visible;border-radius:0}
 .panel .scene .living-frame.mist-positioned {animation-name:mist-envelope,mist-aperture,mist-follow-image;animation-duration:2.6s,1.15s,2.4s;animation-timing-function:linear,cubic-bezier(.45,0,.25,1),cubic-bezier(.35,.05,.22,1)}
 @keyframes mist-follow-image {0%,25%{transform:scale(.62);animation-timing-function:cubic-bezier(.22,.61,.36,1)}100%{transform:scale(1.10)}}
-.panel .scene .living-frame .mist-puff {position:absolute;width:85%;height:65%;left:var(--x);top:var(--y);border-radius:50%;filter:blur(8px);background:radial-gradient(ellipse at 42% 45%,rgba(255,244,218,.48),rgba(245,213,151,.30) 29%,rgba(215,169,94,.13) 49%,transparent 73%);opacity:0;animation:mist-drift calc(2.6s - var(--delay)) var(--delay) linear both}
+.panel .scene .living-frame .mist-puff {position:absolute;width:100%;height:85%;left:var(--x);top:var(--y);border-radius:50%;filter:blur(12px);background:radial-gradient(ellipse at 42% 45%,rgba(255,244,218,.58),rgba(245,213,151,.38) 29%,rgba(215,169,94,.20) 49%,transparent 73%);opacity:0;animation:mist-drift calc(2.6s - var(--delay)) var(--delay) linear both}
 @keyframes mist-envelope {0%,58%{opacity:1}78%{opacity:.78}92%{opacity:.28}100%{opacity:0}}
-@keyframes mist-drift {0%{opacity:0;transform:translate(-50%,-50%) scale(.18) rotate(var(--angle))}18%{opacity:.42;transform:translate(-50%,-50%) scale(.52) rotate(var(--angle))}42%{opacity:.28;transform:translate(calc(-50% + var(--mx)*.35),calc(-50% + var(--my)*.35)) scale(1.15, .78) rotate(calc(var(--angle) + 15deg))}75%{opacity:0;transform:translate(calc(-50% + var(--mx)),calc(-50% + var(--my))) scale(1.8,1.25) rotate(calc(var(--angle) + 30deg))}100%{opacity:0}}
+@keyframes mist-drift {0%{opacity:0;transform:translate(-50%,-50%) scale(.18) rotate(var(--angle))}18%{opacity:.55;transform:translate(-50%,-50%) scale(.52) rotate(var(--angle))}42%{opacity:.42;transform:translate(calc(-50% + var(--mx)*.35),calc(-50% + var(--my)*.35)) scale(1.15, .78) rotate(calc(var(--angle) + 15deg))}75%{opacity:0;transform:translate(calc(-50% + var(--mx)),calc(-50% + var(--my))) scale(1.8,1.25) rotate(calc(var(--angle) + 30deg))}100%{opacity:0}}
 .panel .scene .living-frame .mist-glint {position:absolute;left:var(--x);top:var(--y);width:var(--size);height:var(--size);border-radius:50%;background:#fff4d5;box-shadow:0 0 3px #fff3cc,0 0 8px #ffd67e;opacity:0;animation:mist-twinkle 1.25s var(--delay) ease-in-out both}
 .panel .scene .living-frame .mist-glint:nth-child(3n) {animation-timing-function:cubic-bezier(.15,.65,.35,1)}
 .panel .scene .living-frame .mist-glint.mist-star {background:transparent;box-shadow:none;border-radius:0;color:#fff9e9;font-size:calc(var(--size)*3);line-height:1;text-shadow:0 0 3px #fff,0 0 10px #ffe5b1,0 0 18px #e9b957}
@@ -1094,7 +1094,7 @@ function openDoor(i) {
     const frame=document.createElement("div");frame.className="living-frame";frame.setAttribute("aria-hidden","true");
     
     const mobileMist=window.matchMedia("(max-width:768px), (pointer:coarse) and (max-width:1024px)").matches;
-    const puffCount=mobileMist?9:16;
+    const puffCount=mobileMist?13:24;
     for(let k=0;k<puffCount;k++){
       const puff=document.createElement("span");puff.className="mist-puff";
       const angle=k*2.399, radius=2+(k%4)*3;
