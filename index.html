@@ -376,6 +376,8 @@ body.welcome .door { animation:welcome-in .65s ease both; animation-delay:calc(2
 @media(prefers-reduced-motion:reduce) { .panel .scene .living-frame::before { animation:none; opacity:0; } }
 
 .overlay { touch-action:pan-y pinch-zoom; }
+.overlay.door-opening {overflow-anchor:none;scroll-behavior:auto}
+#doorTitle:focus {outline:none}
 @media(pointer:coarse) { .scene { touch-action:pan-y pinch-zoom; } }
 
 #musicChoices[hidden]{display:none}
@@ -548,7 +550,7 @@ setTimeout(()=>document.body.classList.remove("welcome"),5000);
     <button class="close" onclick="closeDoor()"
             aria-label="Schließen">✕</button>
 
-    <h2 id="doorTitle"></h2>
+    <h2 id="doorTitle" tabindex="-1"></h2>
 
     <div id="scene" class="scene"></div>
 
@@ -1161,7 +1163,11 @@ function openDoor(i) {
   $("reveal").textContent =
     "🎶 "+playlist[i][0]+" – "+playlist[i][1];
 
-  $("overlay").classList.add("visible");
+  const openingOverlay=$("overlay");
+  openingOverlay.classList.add("visible","door-opening");
+  $("doorTitle").focus({preventScroll:true});
+  openingOverlay.scrollTop=0;
+  pilotLater(()=>openingOverlay.classList.remove("door-opening"),animateOpening?3000:0);
   const ready=()=>{
     if(current!==i || !img.isConnected || !$("overlay").classList.contains("visible"))return;
     imageReady=true;renderPilot();
@@ -1180,10 +1186,6 @@ function openDoor(i) {
   musicTimer=setTimeout(ready,animateOpening?2400:0);
   document.body.style.overflow = "hidden";
   updateMusicPreference();
-  if (preferredMusic && !savedOpening && !pilotLocked() && !$("pilotMusic").hidden) {
-    const link = $(preferredMusic);
-    link.focus({preventScroll:true});
-  }
 }
 
 function revealSong() {
@@ -1210,7 +1212,7 @@ function closeDoor() {
   $("riddlePilot").inert=false;
   $("pilotStage").classList.remove("saved-opening","saved-entering");
   $("pilotStage").inert=false;
-  $("overlay").classList.remove("visible");
+  $("overlay").classList.remove("visible","door-opening");
   document.body.style.overflow = "";
 }
 
