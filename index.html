@@ -526,6 +526,21 @@ header h1 span {min-width:0}
  #pilotMusic .music-links a.music,#musicChoices button{flex:1 1 125px;min-width:0;padding:9px 8px}
  #embeddedMusic .youtube-frame{min-height:0;aspect-ratio:16/9}
 }
+
+/* 06.2.0.52 – compact Spotify track embed and reserved layout. */
+#embeddedMusic .spotify-frame{height:82px;min-height:82px;max-height:82px}
+#pilotStage.pilot-active #embeddedMusic.pilot-spotify-slot,
+.overlay.pilot-desktop-stable #pilotStage.pilot-active #embeddedMusic.pilot-spotify-slot,
+#pilotStage.saved-opening #embeddedMusic.pilot-spotify-slot,
+#pilotStage.saved-entering #embeddedMusic.pilot-spotify-slot{height:110px;min-height:110px;max-height:110px;overflow:hidden}
+#pilotStage.pilot-active #embeddedMusic.pilot-spotify-slot iframe,
+.overlay.pilot-desktop-stable #embeddedMusic.pilot-spotify-slot iframe{height:82px;min-height:82px;max-height:82px}
+#pilotStage.pilot-active #embeddedMusic.pilot-spotify-slot p,
+#riddlePilot.solved + #pilotMusic #embeddedMusic p{margin:5px 0 0;line-height:17px;font-size:12px;color:#c5b99e}
+#riddlePilot.solved + #pilotMusic #embeddedMusic{margin:8px auto 4px}
+#riddlePilot.solved + #pilotMusic .music-links{margin:6px 0 4px}
+#pilotMusic #forgetMusic{min-height:44px;padding:6px 12px;border-color:transparent;background:transparent;color:#d9c49b;font-size:12px}
+#pilotMusic #forgetMusic:hover{background:#193c33;border-color:#dfb97966;color:#f4d18a}
 </style>
 </head>
 <body>
