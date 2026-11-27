@@ -991,29 +991,43 @@ function renderCalendar() {
 }
 
 // 06.2.0.40 – original fairytale opening sound, no external recordings.
-// 06.2.0.45: individual door audio
+let magicAudioContext, magicSoundBus;
 let magicSoundEnabled=true;
 try{magicSoundEnabled=localStorage.getItem("magicSound")!=="off";}catch(e){}
-// 06.2.0.46: preload versioned individual sounds.
-const magicSounds=Array.from({length:24},(_,i)=>{
-  const audio=new Audio();
-  audio.preload="auto";
-  audio.src="magic_sounds/Tuerchen_"+String(i+1).padStart(2,"0")+".mp3?v=06.2.0.46";
-  audio.volume=1;
-  return audio;
-});
-let magicAudio=null;
 function stopMagicSound(){
-  if(!magicAudio)return;
-  magicAudio.pause();try{magicAudio.currentTime=0;}catch(e){}
-  magicAudio=null;
+  if(!magicSoundBus)return;
+  const bus=magicSoundBus;magicSoundBus=null;
+  try{const t=magicAudioContext.currentTime;bus.gain.cancelScheduledValues(t);bus.gain.setTargetAtTime(0,t,.025);setTimeout(()=>bus.disconnect(),150);}catch(e){}
 }
-function playMagicSound(i){
+function playMagicSound(){
   stopMagicSound();
   if(!magicSoundEnabled)return;
-  const audio=magicSounds[i];if(!audio)return;
-  magicAudio=audio;
-  audio.play().catch(e=>console.warn("Magic sound playback",i+1,e));
+  try{
+    const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;
+    const c=magicAudioContext||(magicAudioContext=new AC());
+    const bus=c.createGain();magicSoundBus=bus;bus.gain.value=.24;bus.connect(c.destination);
+    const start=()=>{
+      if(magicSoundBus!==bus||!magicSoundEnabled)return;
+      const t=c.currentTime+.015;
+      const tone=(hz,at,len,amp,type="sine",attack=.015)=>{
+        const o=c.createOscillator(),g=c.createGain();o.type=type;o.frequency.value=hz;
+        const a=t+at,b=Math.min(t+2.95,a+len);
+        g.gain.setValueAtTime(.0001,a);g.gain.exponentialRampToValueAtTime(amp,a+attack);g.gain.exponentialRampToValueAtTime(.0001,b);
+        o.connect(g);g.connect(bus);o.start(a);o.stop(b+.01);
+      };
+      const noise=c.createBuffer(1,Math.floor(c.sampleRate*2.7),c.sampleRate),data=noise.getChannelData(0);
+      for(let j=0;j<data.length;j++)data[j]=Math.random()*2-1;
+      const n=c.createBufferSource(),f=c.createBiquadFilter(),ng=c.createGain();n.buffer=noise;f.type="bandpass";f.Q.value=.55;
+      f.frequency.setValueAtTime(450,t);f.frequency.exponentialRampToValueAtTime(3100,t+1.35);f.frequency.exponentialRampToValueAtTime(850,t+2.65);
+      ng.gain.setValueAtTime(.0001,t);ng.gain.linearRampToValueAtTime(.13,t+.65);ng.gain.linearRampToValueAtTime(.07,t+1.55);ng.gain.exponentialRampToValueAtTime(.0001,t+2.7);
+      n.connect(f);f.connect(ng);ng.connect(bus);n.start(t);
+      [196,293.66,392,493.88].forEach((hz,j)=>{tone(hz,.25+j*.09,2.4-j*.09,.065,"sine",.65);tone(hz*1.003,.25+j*.09,2.4-j*.09,.025,"triangle",.65);});
+      [392,493.88,587.33,659.25,783.99,987.77,1174.66].forEach((hz,j)=>{const a=.48+j*.17;tone(hz,a,.85,.13,"sine");tone(hz*2.01,a,.46,.035);tone(hz,a+.12,.7,.025);});
+      [523.25,659.25,783.99,987.77].forEach((hz,j)=>{tone(hz,1.92+j*.045,.95-j*.045,.10,"sine",.06);tone(hz*2,1.92+j*.045,.65,.025);});
+      setTimeout(()=>{if(magicSoundBus===bus)magicSoundBus=null;try{bus.disconnect();}catch(e){}},3100);
+    };
+    if(c.state==="running")start();else c.resume().then(start).catch(()=>stopMagicSound());
+  }catch(e){stopMagicSound();}
 }
 const magicToggle=document.createElement("button");
 magicToggle.type="button";magicToggle.style.cssText="position:absolute;top:10px;left:10px;min-width:38px;height:38px;padding:0 9px;background:#f1d39a;color:#263b3a;border-radius:9px;z-index:45";
@@ -1027,7 +1041,7 @@ function openDoor(i) {
   current = i;
   const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const animateOpening=!reduced;
-  stopMagicSound();if(animateOpening)playMagicSound(i);
+  stopMagicSound();if(animateOpening)playMagicSound();
   document.querySelector(".panel").classList.toggle("opening-skipped",!animateOpening);
   pilotChoosing=false;
   pilotHintCount=0;$("pilotHints").replaceChildren();
