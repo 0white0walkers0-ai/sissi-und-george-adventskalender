@@ -1005,7 +1005,7 @@ function playMagicSound(){
   try{
     const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;
     const c=magicAudioContext||(magicAudioContext=new AC());
-    const bus=c.createGain();magicSoundBus=bus;bus.gain.value=.24;bus.connect(c.destination);
+    const bus=c.createGain();magicSoundBus=bus;bus.gain.value=.24;const limiter=c.createDynamicsCompressor();limiter.threshold.value=-16;limiter.knee.value=12;limiter.ratio.value=5;limiter.attack.value=.008;limiter.release.value=.15;bus.connect(limiter);limiter.connect(c.destination);
     const start=()=>{
       if(magicSoundBus!==bus||!magicSoundEnabled)return;
       const t=c.currentTime+.015;
@@ -1021,12 +1021,14 @@ function playMagicSound(){
       f.frequency.setValueAtTime(450,t);f.frequency.exponentialRampToValueAtTime(3100,t+1.35);f.frequency.exponentialRampToValueAtTime(850,t+2.65);
       ng.gain.setValueAtTime(.0001,t);ng.gain.linearRampToValueAtTime(.13,t+.65);ng.gain.linearRampToValueAtTime(.07,t+1.55);ng.gain.exponentialRampToValueAtTime(.0001,t+2.7);
       n.connect(f);f.connect(ng);ng.connect(bus);n.start(t);
-      [196,261.63,329.63,392].forEach((hz,j)=>{tone(hz,.25+j*.09,2.4-j*.09,.065,"sine",.65);tone(hz*1.003,.25+j*.09,2.4-j*.09,.025,"triangle",.65);});
-      [523.25,659.25,783.99,880,1046.5,1318.51,1567.98].forEach((hz,j)=>{const a=.38+j*.19;tone(hz,a,.85,.10,"sine");tone(hz*2.01,a,.46,.045);tone(hz,a+.12,.7,.025);});
+      [130.81,196,261.63,329.63,392].forEach((hz,j)=>{tone(hz,.12+j*.07,2.65-j*.07,.048,"sine",1.25);tone(hz*1.003,.12+j*.07,2.65-j*.07,.025,"triangle",1.25);tone(hz*.997,.12+j*.07,2.65-j*.07,.018,"triangle",1.25);});
+      [196,293.66,392,493.88].forEach((hz,j)=>tone(hz,1.05+j*.10,1.65-j*.10,.045,"triangle",.65));
+      [523.25,659.25,783.99,880,1046.5,1318.51,1567.98].forEach((hz,j)=>{const a=.38+j*.19;tone(hz,a,.85,.085,"sine");tone(hz*2.01,a,.46,.045);tone(hz*3.01,a,.28,.012);tone(hz,a+.12,.7,.025);});
+      [1174.66,1567.98,1760,2093,2637.02].forEach((hz,j)=>{const a=1.38+j*.13;tone(hz,a,.52,.035);tone(hz*2.02,a,.23,.012);});
       // Original festive bell overtones, lightly scattered like fairy dust.
       [1046.5,1567.98,1318.51,2093].forEach((hz,j)=>{const a=.72+j*.36;tone(hz,a,.72,.045);tone(hz*2.41,a,.30,.012);tone(hz*1.49,a,.48,.016);});
-      [523.25,659.25,783.99,987.77].forEach((hz,j)=>{tone(hz,1.92+j*.045,.95-j*.045,.10,"sine",.06);tone(hz*2,1.92+j*.045,.65,.025);});
-      setTimeout(()=>{if(magicSoundBus===bus)magicSoundBus=null;try{bus.disconnect();}catch(e){}},3100);
+      [523.25,659.25,783.99,987.77].forEach((hz,j)=>{tone(hz,2.05+j*.035,.88-j*.035,.085,"sine",.08);tone(hz*2,2.05+j*.035,.65,.025);tone(hz/2,2.05+j*.035,.88-j*.035,.025,"triangle",.12);});
+      setTimeout(()=>{if(magicSoundBus===bus)magicSoundBus=null;try{bus.disconnect();limiter.disconnect();}catch(e){}},3100);
     };
     if(c.state==="running")start();else c.resume().then(start).catch(()=>stopMagicSound());
   }catch(e){stopMagicSound();}
