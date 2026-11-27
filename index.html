@@ -1013,7 +1013,7 @@ function playMagicSound(){
       const wet=c.createConvolver(),wetGain=c.createGain();
       const impulse=c.createBuffer(2,Math.floor(c.sampleRate*.65),c.sampleRate);
       for(let ch=0;ch<2;ch++){const d=impulse.getChannelData(ch);for(let j=0;j<d.length;j++)d[j]=(Math.random()*2-1)*Math.pow(1-j/d.length,3)*.35;}
-      wet.buffer=impulse;wetGain.gain.value=.18;wet.connect(wetGain);wetGain.connect(bus);
+      wet.buffer=impulse;wetGain.gain.value=.26;wet.connect(wetGain);wetGain.connect(bus);
       const tone=(hz,at,len,amp,type="sine",attack=.035)=>{
         const o=c.createOscillator(),g=c.createGain(),f=c.createBiquadFilter();o.frequency.value=hz;
         if(type==="triangle"){o.setPeriodicWave(c.createPeriodicWave(new Float32Array([0,0,0,0,0,0]),new Float32Array([0,1,.32,.18,.09,.04])));}
@@ -1030,17 +1030,24 @@ function playMagicSound(){
       for(let j=0;j<data.length;j++)data[j]=Math.random()*2-1;
       const n=c.createBufferSource(),f=c.createBiquadFilter(),ng=c.createGain();n.buffer=noise;f.type="bandpass";f.Q.value=.55;
       f.frequency.setValueAtTime(450,t);f.frequency.exponentialRampToValueAtTime(3100,t+1.35);f.frequency.exponentialRampToValueAtTime(850,t+2.65);
-      ng.gain.setValueAtTime(.0001,t);ng.gain.linearRampToValueAtTime(.13,t+.65);ng.gain.linearRampToValueAtTime(.07,t+1.55);ng.gain.exponentialRampToValueAtTime(.0001,t+2.7);
+      ng.gain.setValueAtTime(.0001,t);ng.gain.linearRampToValueAtTime(.17,t+.65);ng.gain.linearRampToValueAtTime(.07,t+1.55);ng.gain.exponentialRampToValueAtTime(.0001,t+2.7);
       n.connect(f);f.connect(ng);ng.connect(bus);n.start(t);
-      [130.81,196,261.63,329.63,392].forEach((hz,j)=>{tone(hz,.12+j*.07,2.65-j*.07,.048,"sine",1.25);tone(hz*1.003,.12+j*.07,2.65-j*.07,.025,"triangle",1.25);tone(hz*.997,.12+j*.07,2.65-j*.07,.018,"triangle",1.25);});
-      [196,293.66,392,493.88].forEach((hz,j)=>tone(hz,1.05+j*.10,1.65-j*.10,.045,"triangle",.65));
-      [523.25,659.25,783.99,880,1046.5,1318.51,1567.98].forEach((hz,j)=>{const a=.38+j*.19;tone(hz,a,.85,.085,"sine");tone(hz*2.01,a,.46,.045);tone(hz*3.01,a,.28,.012);tone(hz,a+.12,.7,.025);});
-      [1174.66,1567.98,1760,2093,2637.02].forEach((hz,j)=>{const a=1.38+j*.13;tone(hz,a,.52,.035);tone(hz*2.02,a,.23,.012);});
-      [783.99,1046.5,1318.51,1567.98,2093,2637.02].forEach((hz,j)=>{const a=.65+j*.25;tone(hz,a,.55,.027);tone(hz*2.76,a,.24,.009);});
-      [261.63,392,523.25,659.25,783.99].forEach((hz,j)=>{const a=.42+j*.12;tone(hz,a,.85,.035,"triangle",.018);tone(hz*2,a,.35,.012);});
-      // Original festive bell overtones, lightly scattered like fairy dust.
-      [1046.5,1567.98,1318.51,2093].forEach((hz,j)=>{const a=.72+j*.36;tone(hz,a,.72,.045);tone(hz*2.41,a,.30,.012);tone(hz*1.49,a,.48,.016);});
-      [523.25,659.25,783.99,987.77].forEach((hz,j)=>{tone(hz,2.05+j*.035,.88-j*.035,.085,"sine",.08);tone(hz*2,2.05+j*.035,.65,.025);tone(hz/2,2.05+j*.035,.88-j*.035,.025,"triangle",.12);});
+      // 06.2.0.44: particle-like fairy dust, not a melodic fanfare.
+      [261.63,392,523.25].forEach((hz,j)=>tone(hz,.45+j*.12,2.1,.018,"sine",.85));
+      for(let j=0;j<39;j++){
+        const u=j/38,at=.32+1.94*u+.035*Math.sin(j*9.3);
+        const scale=[0,2,4,7,9,12,14,16,19,21,24];
+        const idx=Math.min(10,Math.floor(u*7)+(j*7%4));
+        const hz=783.99*Math.pow(2,scale[idx]/12);
+        const amp=(.021+.019*Math.sin(Math.PI*u)+.014*(j%4===0));
+        tone(hz,at,.23+.24*(j%5)/4,amp,"sine",.009);
+        tone(hz*2.013,at,.12,.012,"sine",.006);
+        if(j%3===0)tone(hz*1.49,at,.32,.009,"sine",.012);
+      }
+      [1046.5,1567.98,2093,2637.02].forEach((hz,j)=>{
+        const at=2.06+j*.055;tone(hz,at,.65,.045,"sine",.025);tone(hz*2.01,at,.28,.013);
+      });
+      [3135.96,2349.32,1567.98].forEach((hz,j)=>tone(hz,2.48+j*.12,.34,.015,"sine",.008));
       setTimeout(()=>{if(magicSoundBus===bus)magicSoundBus=null;try{wet.disconnect();wetGain.disconnect();bus.disconnect();limiter.disconnect();}catch(e){}},3100);
     };
     if(c.state==="running")start();else c.resume().then(start).catch(()=>stopMagicSound());
