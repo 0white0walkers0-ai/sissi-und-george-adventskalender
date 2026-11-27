@@ -354,25 +354,25 @@ body.welcome .door { animation:welcome-in .65s ease both; animation-delay:calc(2
 @keyframes visible-corner-star { 0%,100% { opacity:0; transform:scale(.5); } 30%,55% { opacity:1; transform:scale(1.15); } }
 
 .panel .scene .living-frame { inset:0; transform:translateZ(90px); border:0; border-radius:15px; overflow:hidden; opacity:1; animation:none; box-shadow:none; }
-.panel .scene .living-frame {z-index:2;transform:translateZ(30px);animation:mist-envelope 3.5s linear both;clip-path:inset(0 50%);animation-name:mist-envelope, mist-aperture;animation-duration:3.5s,1.4s;animation-timing-function:linear,cubic-bezier(.45,0,.25,1)}
+.panel .scene .living-frame {z-index:2;transform:translateZ(30px);animation:mist-envelope 3.5s linear both;clip-path:inset(0 50%);animation-name:mist-envelope, mist-aperture;animation-duration:2.6s,1.15s;animation-timing-function:linear,cubic-bezier(.45,0,.25,1)}
 @keyframes mist-aperture {from{clip-path:inset(0 50%)}to{clip-path:inset(0 0)}}
-.panel .scene .living-frame::before {content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at center,rgba(255,230,167,.85),rgba(226,177,89,.38) 22%,transparent 65%);animation:mist-first-light 2.45s ease-out both}
+.panel .scene .living-frame::before {content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at center,rgba(255,230,167,.85),rgba(226,177,89,.38) 22%,transparent 65%);animation:mist-first-light 1.95s ease-out both}
 @keyframes mist-first-light {0%{opacity:.85;transform:scale(.3)}35%{opacity:1;transform:scale(.85)}60%{opacity:.8;transform:scale(1.15)}100%{opacity:0;transform:scale(1.5)}}
 .panel .scene .door-cover {z-index:40;transform:translateZ(100px)}
-.panel .scene .living-frame .mist-puff {position:absolute;width:85%;height:65%;left:var(--x);top:var(--y);border-radius:50%;background:radial-gradient(ellipse at 42% 45%,rgba(255,244,218,.65),rgba(245,213,151,.42) 29%,rgba(215,169,94,.20) 49%,transparent 73%);opacity:0;animation:mist-drift calc(3.2s - var(--delay)) var(--delay) linear both}
+.panel .scene .living-frame .mist-puff {position:absolute;width:85%;height:65%;left:var(--x);top:var(--y);border-radius:50%;background:radial-gradient(ellipse at 42% 45%,rgba(255,244,218,.65),rgba(245,213,151,.42) 29%,rgba(215,169,94,.20) 49%,transparent 73%);opacity:0;animation:mist-drift calc(2.5s - var(--delay)) var(--delay) linear both}
 @keyframes mist-envelope {0%,52%{opacity:1}75%{opacity:.55}100%{opacity:0}}
 @keyframes mist-drift {0%{opacity:0;transform:translate(-50%,-50%) scale(.18) rotate(var(--angle))}18%{opacity:.42;transform:translate(-50%,-50%) scale(.52) rotate(var(--angle))}42%{opacity:.28;transform:translate(calc(-50% + var(--mx)*.35),calc(-50% + var(--my)*.35)) scale(1.15, .78) rotate(calc(var(--angle) + 15deg))}75%{opacity:0;transform:translate(calc(-50% + var(--mx)),calc(-50% + var(--my))) scale(1.8,1.25) rotate(calc(var(--angle) + 30deg))}100%{opacity:0}}
-.panel .scene .living-frame .mist-glint {position:absolute;left:var(--x);top:var(--y);width:var(--size);height:var(--size);border-radius:50%;background:#ffe9b6;box-shadow:0 0 4px #ffe0a0;opacity:0;animation:mist-twinkle 1.3s var(--delay) ease-in-out both}
+.panel .scene .living-frame .mist-glint {position:absolute;left:var(--x);top:var(--y);width:var(--size);height:var(--size);border-radius:50%;background:#ffe9b6;box-shadow:0 0 4px #ffe0a0;opacity:0;animation:mist-twinkle 1.05s var(--delay) ease-in-out both}
 .panel .scene .living-frame .mist-glint.mist-star {background:transparent;box-shadow:none;border-radius:0;color:#fff9e9;font-size:calc(var(--size)*3);line-height:1;text-shadow:0 0 3px #fff,0 0 8px #ffe5b1,0 0 14px #e9b957}
 @keyframes mist-twinkle {0%{opacity:0;transform:translate(0,0) scale(.3);filter:blur(0)}18%{opacity:1;transform:translate(calc(var(--mx)*.12),calc(var(--my)*.12)) scale(1.7);filter:blur(.2px);animation-timing-function:cubic-bezier(.35,.05,.22,1)}48%{opacity:.9;transform:translate(calc(var(--mx)*.65),calc(var(--my)*.65)) scale(2.4,1.25);filter:blur(.7px)}65%{opacity:1;transform:translate(calc(var(--mx)*.88),calc(var(--my)*.88)) scale(1.8);filter:blur(.15px)}85%{opacity:.35;transform:translate(var(--mx),var(--my)) scale(1.1);filter:blur(1.1px)}100%{opacity:0;transform:translate(calc(var(--mx)*1.35),calc(var(--my)*1.35)) scale(.7);filter:blur(2px)}}
-.panel .scene img {animation-duration:3.3s;animation-name:mist-image-reveal;animation-timing-function:linear}
-@keyframes mist-image-reveal {0%,54.5455%{opacity:0;transform:scale(1.10)}72.7273%{opacity:.42;transform:scale(1.10)}100%{opacity:1;transform:scale(1.10)}}
-.panel .scene .curtain.left { animation-duration:1.4s; animation-timing-function:cubic-bezier(.45,0,.25,1); }
-.panel .scene .curtain.right { animation-duration:1.4s; animation-timing-function:cubic-bezier(.45,0,.25,1); }
-.panel .scene .door-cover { animation-duration:1.4s; }
+.panel .scene img {animation-duration:2.4s;animation-name:mist-image-reveal;animation-timing-function:linear}
+@keyframes mist-image-reveal {0%,25%{opacity:0;transform:scale(1.10)}45%{opacity:.22;transform:scale(1.10)}70%{opacity:.72;transform:scale(1.10)}100%{opacity:1;transform:scale(1.10)}}
+.panel .scene .curtain.left { animation-duration:1.15s; animation-timing-function:cubic-bezier(.45,0,.25,1); }
+.panel .scene .curtain.right { animation-duration:1.15s; animation-timing-function:cubic-bezier(.45,0,.25,1); }
+.panel .scene .door-cover { animation-duration:1.15s; }
 .panel .scene img { animation-timing-function:cubic-bezier(.35,.05,.22,1); }
 @keyframes message-in { 0%,66.6667% { opacity:0; transform:translateY(5px); } 100% { opacity:1; transform:none; } }
-.panel .message {animation-duration:3.3s}
+.panel .message {animation-duration:2.4s}
 @media(prefers-reduced-motion:reduce) { .panel .scene .living-frame::before { animation:none; opacity:0; } }
 
 .overlay { touch-action:pan-y pinch-zoom; }
@@ -395,7 +395,7 @@ body.welcome .door { animation:welcome-in .65s ease both; animation-delay:calc(2
 /* Musical riddle pilot */
 #riddlePilot[hidden],#pilotMusic[hidden],#pilotHint[hidden],#pilotReveal[hidden],#pilotAnswer[hidden]{display:none!important}
 #riddlePilot.riddle-opening {opacity:0;visibility:hidden;pointer-events:none}
-#riddlePilot.riddle-entering {animation:riddle-entrance .7s ease-in-out both;pointer-events:none}
+#riddlePilot.riddle-entering {animation:riddle-entrance .6s ease-in-out both;pointer-events:none}
 @keyframes riddle-entrance {from{opacity:0}to{opacity:1}}
 @media(prefers-reduced-motion:reduce){#riddlePilot.riddle-entering{animation:none;pointer-events:auto}}
 #riddlePilot {position:relative;margin:20px auto;padding:18px;border:1px solid #dfb979;border-radius:12px;background:#102b26;color:#fff0d0}
@@ -1101,7 +1101,7 @@ function openDoor(i) {
     scene.appendChild(cover);
     const finishCurtain=()=>{if(!cover.isConnected)return;cover.remove();if(img.isConnected)scene.classList.add("curtain-open");};
     right.addEventListener("animationend",finishCurtain,{once:true});
-    setTimeout(finishCurtain,1400);
+    setTimeout(finishCurtain,1150);
   }else{img.classList.add("pop-ready");}
   for(const position of ["top","bottom"]){
     const ornament=document.createElement("div");
@@ -1153,7 +1153,7 @@ function openDoor(i) {
       glint.style.setProperty("--mx",Math.cos(angle)*300*reach+"px");
       glint.style.setProperty("--my",Math.sin(angle)*240*reach+"px");
       glint.style.setProperty("--size",(1+k%5*.45)+"px");
-      glint.style.setProperty("--delay",(.2+(k%64)*.028)+"s");
+      glint.style.setProperty("--delay",(.15+(k%64)*.021)+"s");
       frame.appendChild(glint);
     }
     scene.appendChild(frame);
@@ -1166,8 +1166,8 @@ function openDoor(i) {
       const angle=k*2.399, distance=65+(k%9)*12;
       spark.style.setProperty("--dx",Math.cos(angle)*distance+"px");
       spark.style.setProperty("--dy",Math.sin(angle)*distance+"px");
-      spark.style.animationDelay=(1.65+k*.016)+"s";
-      spark.style.animationDuration=(1.85-k*.016)+"s";
+      spark.style.animationDelay=(1.15+k*.012)+"s";
+      spark.style.animationDuration=(1.45-k*.012)+"s";
       spark.style.fontSize=(9+k%5*3)+"px";
       scene.appendChild(spark);
       spark.addEventListener("animationend",()=>spark.remove(),{once:true});
@@ -1215,11 +1215,11 @@ function openDoor(i) {
     riddle.classList.remove("riddle-opening");
     if(pilotLocked()&&animateOpening){
       riddle.classList.add("riddle-entering");
-      pilotLater(()=>{riddle.classList.remove("riddle-entering");riddle.inert=false;},700);
+      pilotLater(()=>{riddle.classList.remove("riddle-entering");riddle.inert=false;},600);
     }else{riddle.inert=false;}
     showEmbeddedMusic();
   };
-  musicTimer=setTimeout(ready,animateOpening?3300:0);
+  musicTimer=setTimeout(ready,animateOpening?2400:0);
   document.body.style.overflow = "hidden";
   updateMusicPreference();
   if (preferredMusic && !pilotLocked() && !$("pilotMusic").hidden) {
