@@ -1009,12 +1009,23 @@ function playMagicSound(){
     const start=()=>{
       if(magicSoundBus!==bus||!magicSoundEnabled)return;
       const t=c.currentTime+.015;
-      const tone=(hz,at,len,amp,type="sine",attack=.015)=>{
-        const o=c.createOscillator(),g=c.createGain();o.type=type;o.frequency.value=hz;
-        const a=t+at,b=Math.min(t+2.95,a+len);
-        g.gain.setValueAtTime(.0001,a);g.gain.exponentialRampToValueAtTime(amp,a+attack);g.gain.exponentialRampToValueAtTime(.0001,b);
-        o.connect(g);g.connect(bus);o.start(a);o.stop(b+.01);
+      // 06.2.0.43: softer acoustic-inspired voices and stereo ambience.
+      const wet=c.createConvolver(),wetGain=c.createGain();
+      const impulse=c.createBuffer(2,Math.floor(c.sampleRate*.65),c.sampleRate);
+      for(let ch=0;ch<2;ch++){const d=impulse.getChannelData(ch);for(let j=0;j<d.length;j++)d[j]=(Math.random()*2-1)*Math.pow(1-j/d.length,3)*.35;}
+      wet.buffer=impulse;wetGain.gain.value=.18;wet.connect(wetGain);wetGain.connect(bus);
+      const tone=(hz,at,len,amp,type="sine",attack=.035)=>{
+        const o=c.createOscillator(),g=c.createGain(),f=c.createBiquadFilter();o.frequency.value=hz;
+        if(type==="triangle"){o.setPeriodicWave(c.createPeriodicWave(new Float32Array([0,0,0,0,0,0]),new Float32Array([0,1,.32,.18,.09,.04])));}
+        else{o.type=type;}
+        const a=t+at,b=Math.min(t+2.94,a+len),peak=Math.min(a+attack,b-.02);
+        g.gain.setValueAtTime(.0001,a);g.gain.exponentialRampToValueAtTime(amp,peak);g.gain.exponentialRampToValueAtTime(.0001,b);
+        f.type="lowpass";f.frequency.value=type==="triangle"?1800:Math.min(8500,hz*4);
+        o.connect(f);f.connect(g);
+        if(c.createStereoPanner){const p=c.createStereoPanner();p.pan.value=Math.sin(hz*.017+at*7)*.65;g.connect(p);p.connect(bus);p.connect(wet);}else{g.connect(bus);g.connect(wet);}
+        o.start(a);o.stop(b+.01);
       };
+      bus.gain.setValueAtTime(.0001,t);bus.gain.linearRampToValueAtTime(.24,t+.38);bus.gain.setValueAtTime(.24,t+2.38);bus.gain.exponentialRampToValueAtTime(.0001,t+2.99);
       const noise=c.createBuffer(1,Math.floor(c.sampleRate*2.7),c.sampleRate),data=noise.getChannelData(0);
       for(let j=0;j<data.length;j++)data[j]=Math.random()*2-1;
       const n=c.createBufferSource(),f=c.createBiquadFilter(),ng=c.createGain();n.buffer=noise;f.type="bandpass";f.Q.value=.55;
@@ -1025,10 +1036,12 @@ function playMagicSound(){
       [196,293.66,392,493.88].forEach((hz,j)=>tone(hz,1.05+j*.10,1.65-j*.10,.045,"triangle",.65));
       [523.25,659.25,783.99,880,1046.5,1318.51,1567.98].forEach((hz,j)=>{const a=.38+j*.19;tone(hz,a,.85,.085,"sine");tone(hz*2.01,a,.46,.045);tone(hz*3.01,a,.28,.012);tone(hz,a+.12,.7,.025);});
       [1174.66,1567.98,1760,2093,2637.02].forEach((hz,j)=>{const a=1.38+j*.13;tone(hz,a,.52,.035);tone(hz*2.02,a,.23,.012);});
+      [783.99,1046.5,1318.51,1567.98,2093,2637.02].forEach((hz,j)=>{const a=.65+j*.25;tone(hz,a,.55,.027);tone(hz*2.76,a,.24,.009);});
+      [261.63,392,523.25,659.25,783.99].forEach((hz,j)=>{const a=.42+j*.12;tone(hz,a,.85,.035,"triangle",.018);tone(hz*2,a,.35,.012);});
       // Original festive bell overtones, lightly scattered like fairy dust.
       [1046.5,1567.98,1318.51,2093].forEach((hz,j)=>{const a=.72+j*.36;tone(hz,a,.72,.045);tone(hz*2.41,a,.30,.012);tone(hz*1.49,a,.48,.016);});
       [523.25,659.25,783.99,987.77].forEach((hz,j)=>{tone(hz,2.05+j*.035,.88-j*.035,.085,"sine",.08);tone(hz*2,2.05+j*.035,.65,.025);tone(hz/2,2.05+j*.035,.88-j*.035,.025,"triangle",.12);});
-      setTimeout(()=>{if(magicSoundBus===bus)magicSoundBus=null;try{bus.disconnect();limiter.disconnect();}catch(e){}},3100);
+      setTimeout(()=>{if(magicSoundBus===bus)magicSoundBus=null;try{wet.disconnect();wetGain.disconnect();bus.disconnect();limiter.disconnect();}catch(e){}},3100);
     };
     if(c.state==="running")start();else c.resume().then(start).catch(()=>stopMagicSound());
   }catch(e){stopMagicSound();}
