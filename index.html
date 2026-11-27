@@ -599,6 +599,25 @@ header h1 span {min-width:0}
  .panel:not(.finale) h2{margin-bottom:14px}
  .panel:not(.finale) .scene{margin-top:32px;margin-bottom:38px}
 }
+
+/* 06.2.0.59 – Visual Harmony */
+#pilotMusic .external-music-links a.music,
+#pilotMusic .external-music-links a.music#spotify,
+#pilotMusic .external-music-links a.music#youtube{flex:0 0 56px;width:56px;min-width:56px;max-width:56px;height:56px;min-height:56px;max-height:56px;padding:0;box-sizing:border-box}
+#pilotAnswer:not(.pilot-finale) svg{margin-bottom:2px}
+@media(max-width:768px),(pointer:coarse) and (max-width:1024px){
+ .panel:not(.finale) h2#doorTitle{margin-bottom:8px}
+ .panel:not(.finale) .scene{margin-top:24px;margin-bottom:16px}
+ .panel:not(.finale) .scene:not(.curtain-open){margin-top:44px;margin-bottom:46px}
+ .panel:not(.finale) .message{margin:4px auto 8px}
+ .panel:not(.finale) #riddlePilot{margin-top:12px}
+ .panel:not(.finale) .overlay.pilot-desktop-stable #pilotStage::before{inset:12px 0 0}
+ #pilotMusic .external-music-links a.music#spotify,
+ #pilotMusic .external-music-links a.music#youtube{flex-basis:54px;width:54px;min-width:54px;max-width:54px;height:54px;min-height:54px;max-height:54px}
+}
+@media(max-width:768px),(pointer:coarse) and (max-width:1024px){
+ .overlay.pilot-desktop-stable .panel:not(.finale) #pilotStage::before{inset:12px 0 0}
+}
 </style>
 </head>
 <body>
