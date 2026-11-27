@@ -369,7 +369,8 @@ body.welcome .door { animation:welcome-in .65s ease both; animation-delay:calc(2
 .panel .scene .living-frame .mist-puff {position:absolute;width:100%;height:85%;left:var(--x);top:var(--y);border-radius:50%;filter:blur(12px);background:radial-gradient(ellipse at 42% 45%,rgba(255,244,218,.58),rgba(245,213,151,.38) 29%,rgba(215,169,94,.20) 49%,transparent 73%);opacity:0;animation:mist-drift calc(2.6s - var(--delay)) var(--delay) linear both}
 @keyframes mist-envelope {0%,58%{opacity:1}78%{opacity:.78}92%{opacity:.28}100%{opacity:0}}
 @keyframes mist-drift {0%{opacity:0;transform:translate(-50%,-50%) scale(.18) rotate(var(--angle))}18%{opacity:.55;transform:translate(-50%,-50%) scale(.52) rotate(var(--angle))}42%{opacity:.42;transform:translate(calc(-50% + var(--mx)*.35),calc(-50% + var(--my)*.35)) scale(1.15, .78) rotate(calc(var(--angle) + 15deg))}75%{opacity:0;transform:translate(calc(-50% + var(--mx)),calc(-50% + var(--my))) scale(1.8,1.25) rotate(calc(var(--angle) + 30deg))}100%{opacity:0}}
-.panel .scene .living-frame .mist-glint {position:absolute;left:var(--x);top:var(--y);width:var(--size);height:var(--size);border-radius:50%;background:#fff4d5;box-shadow:0 0 3px #fff3cc,0 0 8px #ffd67e;opacity:0;animation:mist-twinkle 1.25s var(--delay) ease-in-out both}
+.panel .scene .living-frame .mist-glint {position:absolute;left:var(--x);top:var(--y);width:var(--size);height:var(--size);border-radius:50%;background:#fff4d5;box-shadow:0 0 3px #fff3cc,0 0 8px #ffd67e;opacity:0;animation:mist-twinkle var(--dust-duration,1.25s) var(--delay) ease-in-out both}
+.panel .scene .living-frame .mist-glint:not(.mist-star){background:#ffe5a0;box-shadow:0 0 2px #fff3cc,0 0 5px #eeb344;filter:brightness(var(--dust-brightness,1))}
 .panel .scene .living-frame .mist-glint:nth-child(3n) {animation-timing-function:cubic-bezier(.15,.65,.35,1)}
 .panel .scene .living-frame .mist-glint.mist-star {background:transparent;box-shadow:none;border-radius:0;color:#fff9e9;font-size:calc(var(--size)*3);line-height:1;text-shadow:0 0 3px #fff,0 0 10px #ffe5b1,0 0 18px #e9b957}
 @keyframes mist-twinkle {0%{opacity:0;transform:translate(0,0) scale(.3)}18%{opacity:1;transform:translate(calc(var(--mx)*.16 + var(--bend)*.45),calc(var(--my)*.16)) scale(1.1)}48%{opacity:.9;transform:translate(calc(var(--mx)*.48 + var(--bend)),calc(var(--my)*.48)) scale(1.45)}65%{opacity:1;transform:translate(calc(var(--mx)*.7 + var(--bend)*.65),calc(var(--my)*.7)) scale(1.6);filter:brightness(1.35)}85%{opacity:.55;transform:translate(calc(var(--mx)*.9 + var(--bend)*.2),calc(var(--my)*.9)) scale(.9)}100%{opacity:0;transform:translate(var(--mx),var(--my)) scale(.45)}}
@@ -1109,17 +1110,23 @@ function openDoor(i) {
     const glints=mobileMist?240:480;
     for(let k=0;k<glints;k++){
       const glint=document.createElement("span");glint.className="mist-glint";if(k%7===0){glint.classList.add("mist-star");glint.textContent=k%14===0?"✧":"✦";}
+      // 06.2.0.39: organic particle-only fairy dust waves.
       const strands=10,strand=k%strands,t=(Math.floor(k/strands)+.5)/Math.ceil(glints/strands),side=strand%2?1:-1;
-      const angle=strand*2*Math.PI/strands+t*1.65, radius=4+36*t;
-      const jitter=Math.sin(k*17.17)*3.2;
-      glint.style.setProperty("--x",(50+Math.cos(angle)*radius+jitter)+"%");
-      glint.style.setProperty("--y",(50+Math.sin(angle)*radius*.8+jitter*.6)+"%");
-      const reach=.35+(k%11)*.045;
-      glint.style.setProperty("--mx",Math.cos(angle+.65)*220*reach+"px");
-      glint.style.setProperty("--my",(Math.sin(angle+.65)*160-35)*reach+"px");
-      glint.style.setProperty("--bend",side*(25+strand*7)+"px");
-      glint.style.setProperty("--size",(.65+k%5*.32)+"px");
-      glint.style.setProperty("--delay",(.12+t*.72+strand*.065)+"s");
+      const angle=strand*Math.PI/5, u=Math.pow(t,1.35);
+      const along=5+35*u, wave=side*(7+strand%3*2)*Math.sin(u*Math.PI*1.65);
+      const scatter=(.65+2.4*Math.sin(Math.PI*u))*Math.sin(k*17.17);
+      const x=along*Math.cos(angle)-(wave+scatter)*Math.sin(angle);
+      const y=along*Math.sin(angle)+(wave+scatter)*Math.cos(angle);
+      glint.style.setProperty("--x",(50+x)+"%");
+      glint.style.setProperty("--y",(50+y*.85)+"%");
+      const reach=.45+(strand%4)*.08;
+      glint.style.setProperty("--mx",Math.cos(angle)*155*reach+"px");
+      glint.style.setProperty("--my",Math.sin(angle)*115*reach+"px");
+      glint.style.setProperty("--bend",side*(18+strand%3*9)+"px");
+      glint.style.setProperty("--size",(.48+(k*7%11)*.105)+"px");
+      glint.style.setProperty("--delay",(.10+u*.72+strand*.065)+"s");
+      glint.style.setProperty("--dust-duration",(1.12+(strand%4)*.08)+"s");
+      glint.style.setProperty("--dust-brightness",(.45+(k*13%11)*.055).toFixed(2));
       frame.appendChild(glint);
     }
     scene.appendChild(frame);
