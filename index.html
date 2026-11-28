@@ -660,6 +660,10 @@ body.native-door-scroll{overflow:visible!important;overflow-anchor:none}
  .panel .close{width:44px;height:44px}
  .panel .navigation button,#pilotHint,#pilotReveal{min-height:44px}
 }
+/* 06.2.0.70 – constrain document width without creating a nested scroll container */
+html:has(body.native-door-scroll){overflow-x:clip}
+body.native-door-scroll{max-width:100%;overflow-x:clip!important;overflow-y:visible!important}
+body.native-door-scroll .overlay.visible{width:100%;max-width:100%;min-width:0;overflow-x:clip;overflow-y:visible}
 </style>
 </head>
 <body>
