@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Sissi & George – Unser Adventskalender</title>
 <link rel="preload" as="image" href="Bilder/Titelbild.png" fetchpriority="high">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&amp;family=Cormorant+Garamond:ital,wght@0,600;1,600&amp;family=Lora:wght@400;500&amp;display=swap">
@@ -634,6 +634,18 @@ header h1 span {min-width:0}
 #embeddedMusic .music-api-host{width:100%;position:relative}
 #embeddedMusic .music-api-host.spotify-frame{height:82px}
 #embeddedMusic .music-api-host.youtube-frame iframe{height:100%;position:absolute;inset:0}
+/* 06.2.0.66 – mobile viewport and safe areas */
+@media(max-width:768px),(pointer:coarse) and (max-width:1024px){
+ body{min-height:100svh}
+ .overlay{box-sizing:border-box;inset:0;max-height:100dvh;padding-top:max(20px,env(safe-area-inset-top));padding-bottom:max(20px,env(safe-area-inset-bottom));padding-left:max(12px,env(safe-area-inset-left));padding-right:max(12px,env(safe-area-inset-right))}
+ .overlay .panel{min-width:0;max-width:min(650px,100%)}
+}
+@media(pointer:coarse) and (orientation:landscape){
+ .overlay{max-height:100dvh;padding-left:max(12px,env(safe-area-inset-left));padding-right:max(12px,env(safe-area-inset-right));padding-top:max(20px,env(safe-area-inset-top));padding-bottom:max(20px,env(safe-area-inset-bottom))}
+}
+@supports(padding:max(0px,1px)){
+ body{padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right);padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
+}
 </style>
 </head>
 <body>
