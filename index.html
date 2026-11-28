@@ -808,10 +808,10 @@ const musicTracks = {
   10:{spotify:"4eHbdreAnSOrDDsFfc4Fpm",youtube:"3JWTaaS7LdU"},
   11:{spotify:"2ATDkfqprlNNe9mYWodgdc",youtube:"xFrGuyw1V8s"},
   12:{spotify:"3QqcdSt1V12CFk5NbIJGBh",youtube:"JIVaUcE4kAM"},
-  13:{spotify:"7fapAlfgJf6EzlviBqJb4f",youtube:"_1Jv09v7kpI"},
+  13:{spotify:"7fapAlfgJf6EzlviBqJb4f",youtube:"_lJv09v7kpI"},
   14:{spotify:"2JmZGZMlDu90ngd74T05Ue",youtube:"HgzGwKwLmgM"},
   15:{spotify:"15MJ5NThPjj6xhPcts8MiY",youtube:"Bx51eegLTY8"},
-  16:{spotify:"0f6pPvxwkvBFaIpfhAQHgt",youtube:"5EsEJRX1rGk"},
+  16:{spotify:"0f6pPvxwkvBFaIpfhAQHgt",youtube:"Ucz7sm34-jg"},
   17:{spotify:"3FEhbAkm1Dy21UvhbYhFM3",youtube:"LyYAQHDMqfA"},
   18:{spotify:"2ZoO0uLQRp2WhTlyIH8PJf",youtube:"kiMG_JV2gbo"},
   19:{spotify:"0EANX0OVKSCcmarY50Xa4p",youtube:"5oJDPvBjRHQ"},
@@ -847,11 +847,11 @@ function musicApi(service){
 }
 function musicAlive(session){return musicSession===session&&$("overlay").classList.contains("visible");}
 function musicStatus(session,playing){
-  if(musicAlive(session)){session.note.textContent=playing?"Genieße unsere heutige Melodie. ♡":"Tippe auf Play und genieße unsere Melodie.";if(session.retry)session.retry.hidden=playing;}
+  if(musicAlive(session)&&!session.failed){session.note.textContent=playing?"Genieße unsere heutige Melodie. ♡":"Tippe auf Play und genieße unsere Melodie.";if(session.retry)session.retry.hidden=playing;}
 }
 function startEmbeddedPlayback(){
   const session=musicSession;
-  if(!session||!musicAlive(session))return;
+  if(!session||!musicAlive(session)||session.failed)return;
   session.requested=true;
   if(pilotAnimating||magicSoundBus||pilotLocked()||session.started||!session.controller||!session.ready)return;
   session.started=true;
@@ -915,7 +915,7 @@ function showEmbeddedMusic(preparingMobile=false){
           onReady:event=>{if(!musicAlive(session))return;session.controller=event.target;session.ready=true;if(session.requested)startEmbeddedPlayback();},
           onStateChange:event=>musicStatus(session,event.data===1),
           onAutoplayBlocked:()=>musicStatus(session,false),
-          onError:()=>musicStatus(session,false)
+          onError:()=>{if(!musicAlive(session))return;session.failed=true;session.note.textContent="Dieses Video kann hier nicht abgespielt werden. Öffne unsere Melodie direkt in YouTube oder wähle Spotify.";if(session.retry)session.retry.hidden=true;}
         }});
       }
     }catch(e){fallback();}
