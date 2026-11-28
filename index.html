@@ -654,6 +654,12 @@ header h1 span {min-width:0}
 body.native-door-scroll > header,body.native-door-scroll > .controls,body.native-door-scroll > #calendar,body.native-door-scroll > .calendar-flourish{display:none!important}
 body.native-door-scroll .overlay.visible{position:relative;inset:auto;overflow:visible;max-height:none;min-height:100svh;display:flow-root;overflow-anchor:none}
 body.native-door-scroll{overflow:visible!important;overflow-anchor:none}
+/* 06.2.0.69 – touch targets, preserve pinch zoom */
+@media(pointer:coarse){
+ button,a.music{touch-action:manipulation}
+ .panel .close{width:44px;height:44px}
+ .panel .navigation button,#pilotHint,#pilotReveal{min-height:44px}
+}
 </style>
 </head>
 <body>
@@ -1541,11 +1547,13 @@ function closeDoor() {
   if(nativeDoorSavedY!==null){if(appleMobile)window.scrollTo(0,nativeDoorSavedY);nativeDoorSavedY=null;}
 }
 
+let lastTouchNavigation=-Infinity;
 function navigate(step) {
   if(step>0 && pilotLocked())return;
+  if(window.matchMedia("(pointer:coarse)").matches&&(performance.now()-lastTouchNavigation<450))return;
   let next = current+step;
   if (next<0 || next>=24) return;
-  if (available(next+1)) openDoor(next);
+  if (available(next+1)){lastTouchNavigation=performance.now();openDoor(next);}
 }
 
 function toggleMode() {
@@ -1562,19 +1570,23 @@ let swipeStart=null;
 const swipeOverlay=$("overlay");
 swipeOverlay.addEventListener("touchstart",e=>{
   swipeStart=null;
-  if(e.touches.length!==1 || e.target.closest("button,a,input,select,textarea"))return;
+  if(e.touches.length!==1 || e.target.closest("button,a,input,select,textarea,iframe,[contenteditable]"))return;
   const t=e.touches[0];
   swipeStart={x:t.clientX,y:t.clientY,time:performance.now()};
 },{passive:true});
 swipeOverlay.addEventListener("touchmove",e=>{
-  if(e.touches.length!==1)swipeStart=null;
+  if(e.touches.length!==1){swipeStart=null;return;}
+  if(swipeStart){
+    const t=e.touches[0],dx=t.clientX-swipeStart.x,dy=t.clientY-swipeStart.y;
+    if(Math.abs(dy)>18&&Math.abs(dy)>Math.abs(dx))swipeStart=null;
+  }
 },{passive:true});
 swipeOverlay.addEventListener("touchcancel",()=>{swipeStart=null;},{passive:true});
 swipeOverlay.addEventListener("touchend",e=>{
   const start=swipeStart;swipeStart=null;
   if(!start || e.changedTouches.length!==1 || !swipeOverlay.classList.contains("visible"))return;
   const t=e.changedTouches[0],dx=t.clientX-start.x,dy=t.clientY-start.y;
-  if(performance.now()-start.time>1000 || Math.abs(dx)<65 || Math.abs(dx)<1.6*Math.abs(dy))return;
+  if(performance.now()-start.time>1000 || Math.abs(dx)<65 || Math.abs(dx)<1.8*Math.abs(dy))return;
   navigate(dx<0?1:-1);
 },{passive:true});
 
