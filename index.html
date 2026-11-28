@@ -637,14 +637,18 @@ header h1 span {min-width:0}
 /* 06.2.0.66 – mobile viewport and safe areas */
 @media(max-width:768px),(pointer:coarse) and (max-width:1024px){
  body{min-height:100svh}
- .overlay{box-sizing:border-box;inset:0;max-height:100dvh;padding-top:max(20px,env(safe-area-inset-top));padding-bottom:max(20px,env(safe-area-inset-bottom));padding-left:max(12px,env(safe-area-inset-left));padding-right:max(12px,env(safe-area-inset-right))}
+ .overlay{box-sizing:border-box;inset:0;padding-top:max(20px,env(safe-area-inset-top));padding-bottom:max(20px,env(safe-area-inset-bottom));padding-left:max(12px,env(safe-area-inset-left));padding-right:max(12px,env(safe-area-inset-right))}
  .overlay .panel{min-width:0;max-width:min(650px,100%)}
 }
 @media(pointer:coarse) and (orientation:landscape){
- .overlay{max-height:100dvh;padding-left:max(12px,env(safe-area-inset-left));padding-right:max(12px,env(safe-area-inset-right));padding-top:max(20px,env(safe-area-inset-top));padding-bottom:max(20px,env(safe-area-inset-bottom))}
+ .overlay{padding-left:max(12px,env(safe-area-inset-left));padding-right:max(12px,env(safe-area-inset-right));padding-top:max(20px,env(safe-area-inset-top));padding-bottom:max(20px,env(safe-area-inset-bottom))}
 }
 @supports(padding:max(0px,1px)){
  body{padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right);padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
+}
+/* 06.2.0.67 – use one fixed viewport sizing model, without competing dvh cap */
+@media(max-width:768px),(pointer:coarse){
+ .overlay{max-height:none;bottom:0;min-height:0}
 }
 </style>
 </head>
