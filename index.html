@@ -650,6 +650,10 @@ header h1 span {min-width:0}
 @media(max-width:768px),(pointer:coarse){
  .overlay{max-height:none;bottom:0;min-height:0}
 }
+/* 06.2.0.68 – native document scrolling on Apple mobile portrait */
+body.native-door-scroll > header,body.native-door-scroll > .controls,body.native-door-scroll > #calendar,body.native-door-scroll > .calendar-flourish{display:none!important}
+body.native-door-scroll .overlay.visible{position:relative;inset:auto;overflow:visible;max-height:none;min-height:100svh;display:flow-root;overflow-anchor:none}
+body.native-door-scroll{overflow:visible!important;overflow-anchor:none}
 </style>
 </head>
 <body>
@@ -1261,8 +1265,28 @@ function renderMagicToggle(){magicToggle.textContent=magicSoundEnabled?"♫":"�
 magicToggle.addEventListener("click",()=>{magicSoundEnabled=!magicSoundEnabled;try{localStorage.setItem("magicSound",magicSoundEnabled?"on":"off");}catch(e){}if(!magicSoundEnabled)stopMagicSound();renderMagicToggle();});
 document.querySelector(".panel").appendChild(magicToggle);renderMagicToggle();
 
+let nativeDoorSavedY=null;
+const nativeDoorPortrait=window.matchMedia("(orientation: portrait)");
+function syncNativeDoorScroll(){
+ const overlay=$("overlay");
+ const active=overlay.classList.contains("visible");
+ const native=active&&appleMobile&&nativeDoorPortrait.matches;
+ const was=document.body.classList.contains("native-door-scroll");
+ if(native&&!was){
+  const y=overlay.scrollTop;
+  document.body.classList.add("native-door-scroll");
+  document.body.style.overflow="";
+  window.scrollTo(0,y);
+ }else if(!native&&was){
+  const y=window.scrollY;
+  document.body.classList.remove("native-door-scroll");
+  if(active){document.body.style.overflow="hidden";overlay.scrollTop=y;}
+ }
+}
+nativeDoorPortrait.addEventListener("change",syncNativeDoorScroll);
 function openDoor(i) {
   if (!available(i+1)) return;
+  if(!$("overlay").classList.contains("visible"))nativeDoorSavedY=window.scrollY;
   cancelPilotAnimation();stopEmbeddedMusic(); imageReady=false;
   current = i;
   warmMobileMusic();
@@ -1462,7 +1486,9 @@ function openDoor(i) {
   const openingOverlay=$("overlay");
   openingOverlay.classList.add("visible","door-opening");
   $("doorTitle").focus({preventScroll:true});
+  syncNativeDoorScroll();
   openingOverlay.scrollTop=0;
+  if(document.body.classList.contains("native-door-scroll"))window.scrollTo(0,0);
   pilotLater(()=>openingOverlay.classList.remove("door-opening"),animateOpening?3000:0);
   const ready=()=>{
     if(current!==i || !img.isConnected || !$("overlay").classList.contains("visible"))return;
@@ -1480,7 +1506,7 @@ function openDoor(i) {
     }
   };
   musicTimer=setTimeout(ready,animateOpening?2400:0);
-  document.body.style.overflow = "hidden";
+  document.body.style.overflow = document.body.classList.contains("native-door-scroll")?"":"hidden";
   updateMusicPreference();
 }
 
@@ -1510,7 +1536,9 @@ function closeDoor() {
   $("pilotStage").classList.remove("saved-opening","saved-entering");
   $("pilotStage").inert=false;
   $("overlay").classList.remove("visible","door-opening");
+  document.body.classList.remove("native-door-scroll");
   document.body.style.overflow = "";
+  if(nativeDoorSavedY!==null){if(appleMobile)window.scrollTo(0,nativeDoorSavedY);nativeDoorSavedY=null;}
 }
 
 function navigate(step) {
